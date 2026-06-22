@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medurun Agency Admin</title>
+<style>
+:root{
+  --navy:#0F2B5B; --navy-700:#1a3a6b; --navy-50:#eef3fb;
+  --red:#e11d2a; --red-50:#fdecec;
+  --green:#16a34a; --green-50:#e8f7ee;
+  --amber:#d97706; --amber-50:#fef3e2;
+  --gray-50:#F8FAFC; --gray-100:#eef1f6; --gray-200:#e2e7ef; --gray-300:#cbd3e0;
+  --gray-400:#94a0b4; --gray-500:#6b7790; --gray-600:#4a5568; --gray-700:#2d3748;
+  --white:#fff; --shadow:0 1px 3px rgba(15,37,71,.08),0 1px 2px rgba(15,37,71,.04);
+  --shadow-lg:0 10px 40px rgba(15,37,71,.18);
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gray-50);color:var(--gray-700);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:5px}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#fff;color:var(--gray-600);border-right:1px solid var(--gray-200);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:40}
+.brand{display:flex;align-items:center;gap:11px;padding:18px 18px;border-bottom:1px solid var(--gray-100)}
+.brand .logo{width:36px;height:36px;border-radius:9px;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand .logo svg{width:21px;height:21px}
+.brand b{color:var(--navy);font-size:15px;display:block;line-height:1.2}
+.brand span{font-size:11px;color:var(--gray-400)}
+.nav{flex:1;overflow-y:auto;padding:10px 10px}
+.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);padding:14px 12px 6px;font-weight:600}
+.nav a{position:relative;display:flex;align-items:center;gap:11px;padding:8px 12px;border-radius:7px;color:var(--gray-600);text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer;margin-bottom:1px;transition:.12s}
+.nav a:hover{background:var(--gray-50);color:var(--navy)}
+.nav a.active{background:#EEF4FF;color:var(--navy);font-weight:600}
+.nav a.active::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:var(--navy)}
+.nav a svg{width:18px;height:18px;flex-shrink:0;opacity:.75}
+.nav a.active svg{opacity:1}
+.nav a .badge{margin-left:auto;background:var(--gray-100);color:var(--gray-500);font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600}
+.nav a.active .badge{background:#dbe7ff;color:var(--navy)}
+.sidebar-foot{padding:12px 14px;border-top:1px solid var(--gray-100);display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--navy-50);display:flex;align-items:center;justify-content:center;color:var(--navy);font-weight:600;font-size:13px;flex-shrink:0}
+
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-width:0}
+.topbar{position:sticky;top:0;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--gray-200);padding:14px 28px;display:flex;align-items:center;gap:16px;z-index:30}
+.topbar h1{font-size:18px;color:var(--navy);font-weight:700}
+.topbar .crumb{font-size:12px;color:var(--gray-400);font-weight:500}
+.topbar .spacer{flex:1}
+.search{position:relative}
+.search input{border:1px solid var(--gray-200);background:var(--gray-50);border-radius:8px;padding:8px 12px 8px 34px;width:240px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--navy);background:#fff}
+.search svg{position:absolute;left:10px;top:9px;width:16px;height:16px;color:var(--gray-400)}
+.icon-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--gray-200);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-600);position:relative}
+.icon-btn:hover{background:var(--gray-50)}
+.icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid #fff}
+.content{padding:24px 28px 60px;flex:1}
+
+/* Page */
+.page{display:none}
+.page.active{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.page-head h2{font-size:21px;color:var(--navy);font-weight:700}
+.page-head p{color:var(--gray-500);font-size:13px;margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.12s;font-family:inherit}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy-700)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#c4151f}
+.btn-ghost{background:#fff;color:var(--gray-700);border:1px solid var(--gray-200)}
+.btn-ghost:hover{background:var(--gray-50)}
+.btn-green{background:var(--green);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12.5px}
+.btn-icon{padding:7px 9px}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:13px 15px;box-shadow:none;position:relative;overflow:hidden}
+.kpi .ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.kpi .ico svg{width:16px;height:16px}
+.kpi .label{font-size:12px;color:var(--gray-500);font-weight:500}
+.kpi .val{font-size:21px;font-weight:700;color:var(--navy);margin:1px 0 2px}
+.kpi .delta{font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.delta.up{color:var(--green)}.delta.down{color:var(--red)}
+.ico-navy{background:var(--navy-50);color:var(--navy)}
+.ico-red{background:var(--red-50);color:var(--red)}
+.ico-green{background:var(--green-50);color:var(--green)}
+.ico-amber{background:var(--amber-50);color:var(--amber)}
+
+/* Card */
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+.card-head{padding:16px 18px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.card-head h3{font-size:15px;color:var(--navy);font-weight:700}
+.card-body{padding:18px}
+.card-body.flush{padding:0}
+
+/* Filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input{border:1px solid var(--gray-200);background:#fff;border-radius:7px;padding:7px 11px;font-size:12.5px;outline:none;font-family:inherit;color:var(--gray-700)}
+.filters select:focus,.filters input:focus{border-color:var(--navy)}
+.chip-row{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--gray-200);background:#fff;font-size:12.5px;font-weight:500;cursor:pointer;color:var(--gray-600)}
+.chip:hover{border-color:var(--navy)}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--gray-200);margin-bottom:18px}
+.tab{padding:10px 16px;font-size:13.5px;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--navy);border-bottom-color:var(--red)}
+.tab .count{background:var(--gray-100);color:var(--gray-600);font-size:11px;padding:1px 7px;border-radius:9px;margin-left:5px}
+.tab.active .count{background:var(--red-50);color:var(--red)}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);font-weight:600;padding:11px 16px;border-bottom:1px solid var(--gray-200);white-space:nowrap;background:var(--gray-50)}
+td{padding:13px 16px;border-bottom:1px solid var(--gray-100);font-size:13px;white-space:nowrap}
+tbody tr:hover{background:var(--navy-50)}
+tbody tr:last-child td{border-bottom:none}
+.t-strong{font-weight:600;color:var(--navy)}
+.t-sub{color:var(--gray-400);font-size:12px}
+.cell-user{display:flex;align-items:center;gap:9px}
+.cell-user .av{width:30px;height:30px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+
+/* Badge */
+.badge2{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.badge2::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-green{background:var(--green-50);color:var(--green)}
+.b-amber{background:var(--amber-50);color:var(--amber)}
+.b-red{background:var(--red-50);color:var(--red)}
+.b-navy{background:var(--navy-50);color:var(--navy)}
+.b-gray{background:var(--gray-100);color:var(--gray-500)}
+.b-blue{background:#e6f0fd;color:#1d6fd6}
+
+.row-actions{display:flex;gap:5px}
+.lnk{color:var(--navy);font-weight:600;cursor:pointer;font-size:12.5px;background:none;border:none;padding:4px 7px;border-radius:6px;font-family:inherit}
+.lnk:hover{background:var(--navy-50)}
+.lnk.red{color:var(--red)}.lnk.red:hover{background:var(--red-50)}
+.iconbtn{width:30px;height:30px;border:1px solid var(--gray-200);border-radius:7px;background:#fff;color:var(--gray-500);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.12s}
+.iconbtn:hover{background:var(--gray-50);color:var(--navy);border-color:var(--gray-300)}
+.iconbtn svg{width:15px;height:15px}
+/* Fleet quick view strip */
+.qv-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px}
+.qv-item{flex:0 0 auto;min-width:214px;border:1px solid var(--gray-200);border-radius:9px;background:#fff;padding:11px 13px;display:flex;flex-direction:column;gap:7px}
+.qv-r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qv-reg{font-weight:700;color:var(--navy);font-size:13.5px}
+.qv-r2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qv-drv{display:flex;align-items:center;gap:6px;min-width:0;font-size:12px;color:var(--gray-500)}
+.qv-drv .av{width:22px;height:22px;border-radius:50%;background:var(--navy-50);color:var(--navy);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qv-drv span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Info banner */
+.banner{display:flex;align-items:center;gap:10px;background:var(--amber-50);border:1px solid #f3d9a8;border-radius:9px;padding:10px 13px;font-size:13px;color:#8a5a09}
+.banner svg{width:17px;height:17px;color:var(--amber);flex-shrink:0}
+.banner b{color:#8a5a09;font-weight:700}
+/* Add Ambulance wizard */
+.aa-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--gray-100)}
+.equip-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.equip-count{font-size:12.5px;color:var(--gray-500);font-weight:600}
+.equip-count b{color:var(--navy)}
+.equip-grid{display:flex;flex-wrap:wrap;gap:9px}
+.equip-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--gray-200);border-radius:22px;background:#fff;cursor:pointer;font-size:13px;color:var(--gray-600);font-weight:500;transition:.12s;user-select:none}
+.equip-chip:hover{border-color:var(--navy);color:var(--navy)}
+.equip-chip.on{background:var(--navy-50);border-color:var(--navy);color:var(--navy);font-weight:600}
+.equip-chip .ck{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.equip-chip.on .ck{background:var(--navy);border-color:var(--navy)}
+.equip-chip .ck svg{width:10px;height:10px;opacity:0}
+.equip-chip.on .ck svg{opacity:1}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-grid.cols-1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12.5px;font-weight:600;color:var(--gray-700)}
+.field label .req{color:var(--red)}
+.field input,.field select,.field textarea{border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;font-size:13.5px;outline:none;font-family:inherit;background:#fff;color:var(--gray-700);width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-50)}
+.field .hint{font-size:11.5px;color:var(--gray-400)}
+.upload{border:1.5px dashed var(--gray-300);border-radius:9px;padding:16px;text-align:center;cursor:pointer;background:var(--gray-50);transition:.12s}
+.upload:hover{border-color:var(--navy);background:var(--navy-50)}
+.upload svg{width:22px;height:22px;color:var(--gray-400);margin-bottom:4px}
+.upload .ttl{font-size:12.5px;font-weight:600;color:var(--gray-700)}
+.upload .sub{font-size:11px;color:var(--gray-400)}
+.upload.done{border-color:var(--green);background:var(--green-50)}
+.upload.done svg{color:var(--green)}
+.upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.check{display:flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;font-size:13px}
+.check input{width:16px;height:16px;accent-color:var(--navy)}
+.check:hover{background:var(--gray-50)}
+
+/* Stepper */
+.stepper{display:flex;align-items:center;margin-bottom:28px;max-width:760px}
+.step{display:flex;align-items:center;flex:1}
+.step .dot{width:34px;height:34px;border-radius:50%;background:var(--gray-100);color:var(--gray-500);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;border:2px solid var(--gray-200)}
+.step .txt{margin-left:11px}
+.step .txt b{font-size:13px;color:var(--gray-500);display:block}
+.step .txt span{font-size:11px;color:var(--gray-400)}
+.step .bar{flex:1;height:2px;background:var(--gray-200);margin:0 14px}
+.step.active .dot{background:var(--navy);color:#fff;border-color:var(--navy)}
+.step.active .txt b{color:var(--navy)}
+.step.done .dot{background:var(--green);color:#fff;border-color:var(--green)}
+.step.done .bar,.step.active .bar{background:var(--navy)}
+
+/* Drawer */
+.overlay{position:fixed;inset:0;background:rgba(15,37,71,.45);z-index:50;opacity:0;visibility:hidden;transition:.2s}
+.overlay.show{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:94vw;background:#fff;z-index:60;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.drawer.show{transform:none}
+.drawer-head{padding:16px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.drawer-head h3{font-size:16px;color:var(--navy);font-weight:700}
+.drawer-head .x{cursor:pointer;color:var(--gray-400);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;flex-shrink:0}
+.drawer-head .x:hover{background:var(--gray-100)}
+.drawer-body{flex:1;overflow-y:auto;padding:18px 20px;background:var(--gray-50)}
+.drawer-foot{padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;background:#fff}
+.drawer-foot .btn{flex:0 0 auto!important;min-width:0!important;height:40px;padding-top:0;padding-bottom:0}
+.drawer-foot .btn-ghost{color:var(--navy)}
+.da-ic{width:40px;height:40px;border-radius:10px;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.da-ic svg{width:21px;height:21px}
+.dsec{background:#fff;border:1px solid var(--gray-200);border-radius:11px;padding:14px 15px;margin-bottom:12px}
+.dsec h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400);font-weight:700;margin-bottom:11px}
+.dsec.focus{box-shadow:0 0 0 3px var(--navy-50);border-color:var(--navy)}
+.ddoc{display:flex;align-items:center;gap:11px;padding:10px 8px;margin:0 -8px;border-radius:8px;border-bottom:1px solid var(--gray-100);transition:background .12s}
+.ddoc:hover{background:var(--gray-50)}
+.ddoc:last-child{border-bottom:none}
+.ddoc .di{width:32px;height:32px;border-radius:7px;background:var(--gray-50);color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ddoc .di svg{width:16px;height:16px}
+.ddoc .dn{flex:1;min-width:0}
+.ddoc .dn b{font-size:12.5px;color:var(--navy);display:block;font-weight:600}
+.ddoc .da{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.ddoc .da button{font-size:11px;color:var(--navy);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:1px 0}
+.ddoc .da button:hover{text-decoration:underline}
+.ddoc .da button.req{color:var(--amber)}
+/* Verification timeline */
+.vq-tl{position:relative;padding-left:16px}
+.vq-tl::before{content:"";position:absolute;left:3px;top:5px;bottom:7px;width:2px;background:var(--gray-200)}
+.vq-tl .ev{position:relative;padding-bottom:13px}
+.vq-tl .ev:last-child{padding-bottom:0}
+.vq-tl .ev::before{content:"";position:absolute;left:-16px;top:2px;width:8px;height:8px;border-radius:50%;background:var(--navy);box-shadow:0 0 0 2px #fff}
+.vq-tl .ev.amber::before{background:var(--amber)}
+.vq-tl .ev.red::before{background:var(--red)}
+.vq-tl .ev.green::before{background:var(--green)}
+.vq-tl .ev b{font-size:12.5px;color:var(--navy);display:block}
+.vq-tl .ev span{font-size:11px;color:var(--gray-400)}
+
+/* Modal */
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);background:#fff;border-radius:14px;z-index:60;box-shadow:var(--shadow-lg);width:560px;max-width:94vw;max-height:90vh;overflow:hidden;opacity:0;visibility:hidden;transition:.22s;display:flex;flex-direction:column}
+.modal.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:17px;color:var(--navy);font-weight:700}
+.modal-head .x{cursor:pointer;color:var(--gray-400);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px}
+.modal-head .x:hover{background:var(--gray-100)}
+.modal-body{padding:22px;overflow-y:auto}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--gray-200);display:flex;gap:9px;justify-content:flex-end}
+
+/* Detail rows */
+.dl{display:grid;grid-template-columns:130px 1fr;gap:9px 14px;font-size:13px}
+.dl dt{color:var(--gray-500);font-weight:500}
+.dl dd{color:var(--navy);font-weight:600}
+.sec-title{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400);font-weight:700;margin:20px 0 11px}
+.sec-title:first-child{margin-top:0}
+.doc-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--gray-200);border-radius:9px;margin-bottom:9px}
+.doc-row .di{width:36px;height:36px;border-radius:8px;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.doc-row .di svg{width:18px;height:18px}
+.doc-row .dinfo{flex:1;min-width:0}
+.doc-row .dinfo b{font-size:13px;color:var(--navy);display:block}
+.doc-row .dinfo span{font-size:11.5px;color:var(--gray-400)}
+
+/* Fleet/assignment cards */
+.fleet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-bottom:22px}
+.fcard{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.fcard .ftop{height:96px;background:linear-gradient(135deg,var(--navy),var(--navy-700));position:relative;display:flex;align-items:center;justify-content:center}
+.fcard .ftop svg{width:54px;height:54px;color:rgba(255,255,255,.85)}
+.fcard .ftop .cat{position:absolute;top:11px;left:11px;background:rgba(255,255,255,.95);color:var(--navy);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+.fcard .ftop .st{position:absolute;top:11px;right:11px}
+.fcard .fbody{padding:14px}
+.fcard .reg{font-size:15px;font-weight:700;color:var(--navy)}
+.fcard .meta{font-size:12px;color:var(--gray-500);margin:2px 0 11px}
+.fcard .drv{display:flex;align-items:center;gap:8px;padding:9px;background:var(--gray-50);border-radius:8px;margin-bottom:11px}
+.fcard .drv .av{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.fcard .drv b{font-size:12.5px;color:var(--navy);display:block}
+.fcard .drv span{font-size:11px;color:var(--gray-400)}
+.fcard .factions{display:flex;gap:8px}
+
+/* Live cards */
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:22px}
+.lcard{background:#fff;border:1px solid var(--gray-200);border-left:4px solid var(--green);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow)}
+.lcard.enroute{border-left-color:var(--amber)}
+.lcard.dispatch{border-left-color:var(--navy)}
+.lcard .lh{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.lcard .lh b{color:var(--navy);font-size:14px}
+.pulse{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--green)}
+.pulse .pd{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pl 1.4s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 7px rgba(22,163,74,0)}}
+.route{display:flex;gap:10px;margin:11px 0}
+.route .line{display:flex;flex-direction:column;align-items:center;padding-top:3px}
+.route .line .o{width:9px;height:9px;border-radius:50%;border:2px solid var(--navy)}
+.route .line .l{flex:1;width:2px;background:var(--gray-200);margin:2px 0}
+.route .line .d{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.route .pts b{font-size:12.5px;color:var(--navy);display:block}
+.route .pts span{font-size:11px;color:var(--gray-400);display:block;margin-bottom:9px}
+
+/* Bar chart */
+.chart{display:flex;align-items:flex-end;gap:14px;height:200px;padding:14px 6px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
+.bar-col .bars{display:flex;gap:4px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+.bar{width:18px;border-radius:4px 4px 0 0;transition:.3s}
+.bar.rev{background:var(--navy)}
+.bar.exp{background:var(--red)}
+.bar-col .lb{font-size:11px;color:var(--gray-500);font-weight:600}
+.legend{display:flex;gap:18px;justify-content:center;margin-top:14px;font-size:12px;color:var(--gray-500)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* Assignment map grid */
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.slot{border:1px solid var(--gray-200);border-radius:10px;padding:14px;background:#fff;box-shadow:var(--shadow)}
+.slot.unassigned{border-style:dashed;background:var(--gray-50)}
+.slot .sicon{width:42px;height:42px;border-radius:10px;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.slot .sicon svg{width:22px;height:22px}
+.slot .sreg{font-weight:700;color:var(--navy);font-size:14px}
+.slot .sdrv{font-size:12px;color:var(--gray-500);margin:3px 0 10px}
+
+/* misc */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:9px;font-size:13.5px;font-weight:600;z-index:80;box-shadow:var(--shadow-lg);opacity:0;transition:.3s;display:flex;align-items:center;gap:9px}
+.toast.show{transform:translateX(-50%);opacity:1}
+.toast svg{width:18px;height:18px;color:#5fe08a}
+.empty{text-align:center;padding:50px 20px;color:var(--gray-400)}
+.success-wrap{max-width:540px;margin:30px auto;text-align:center;background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:44px 34px;box-shadow:var(--shadow)}
+.success-wrap .circle{width:78px;height:78px;border-radius:50%;background:var(--green-50);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.success-wrap .circle svg{width:40px;height:40px;color:var(--green)}
+.success-wrap h2{color:var(--navy);font-size:23px;margin-bottom:8px}
+.success-wrap p{color:var(--gray-500);margin-bottom:22px}
+.refbox{background:var(--navy-50);border:1px dashed var(--navy);border-radius:11px;padding:18px;margin-bottom:22px}
+.refbox .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500);font-weight:700}
+.refbox .ref{font-size:24px;font-weight:800;color:var(--navy);letter-spacing:.04em;margin:5px 0}
+.toggle{position:relative;width:42px;height:24px;background:var(--gray-300);border-radius:13px;cursor:pointer;transition:.2s;flex-shrink:0}
+.toggle.on{background:var(--navy)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on::after{left:21px}
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--gray-100)}
+.pref-row:last-child{border:none}
+.pref-row b{font-size:13.5px;color:var(--navy)}
+.pref-row span{font-size:12px;color:var(--gray-400)}
+.rating{color:var(--amber);font-weight:600}
+.stat-mini{display:flex;gap:22px;flex-wrap:wrap;margin-top:6px}
+.stat-mini div b{font-size:18px;color:var(--navy);font-weight:700;display:block}
+.stat-mini div span{font-size:11.5px;color:var(--gray-400)}
+
+/* Auth — centered healthcare SaaS style */
+#auth{position:fixed;inset:0;z-index:100;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;
+  background:var(--gray-50);
+  background-image:radial-gradient(circle at 1px 1px,#D6DCE8 1.5px,transparent 0);
+  background-size:30px 30px}
+#auth.hide{display:none}
+/* Registration: natural top-down scroll, no vertical centering */
+#auth.registering{align-items:flex-start;justify-content:center;padding:48px 32px}
+@media(max-width:560px){#auth.registering{padding:24px 16px}}
+#authRegister{margin:0 auto}
+/* Compact wizard */
+#authRegister .auth-card{padding:22px 26px}
+#wizProgress{margin-bottom:18px!important}
+#wizProgress .stepper{margin-bottom:0}
+#wizProgress .step .dot{width:27px;height:27px;font-size:12px}
+#wizProgress .step .txt b{font-size:12px}
+#wizProgress .step .txt span{font-size:10px}
+#wizProgress .step .bar{margin:0 10px}
+#wizBody .form-grid{gap:11px}
+#wizBody .field{gap:4px}
+#wizBody .field input,#wizBody .field select{padding:8px 11px}
+#wizBody h3{margin-bottom:2px!important}
+.wiz-sec{margin-bottom:14px}
+.wiz-sec-h{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400);font-weight:700;margin:14px 0 9px;display:flex;align-items:center;gap:8px}
+.wiz-sec-h::after{content:"";flex:1;height:1px;background:var(--gray-100)}
+.wiz-actions{position:sticky;bottom:-22px;background:#fff;margin:18px -26px -22px;padding:14px 26px;border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;gap:10px;border-radius:0 0 16px 16px}
+.wiz-actions.end{justify-content:flex-end}
+/* Document upload cards */
+.count-pill{display:flex;flex-direction:column;align-items:flex-end;gap:1px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:7px 14px;flex-shrink:0}
+.count-pill .cl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400);font-weight:700}
+.count-pill .cv{font-size:14px;color:var(--navy);font-weight:700}
+.doc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.doc-up{display:flex;gap:12px;align-items:flex-start;border:1.5px dashed var(--gray-300);border-radius:11px;padding:13px 14px;background:var(--gray-50);cursor:pointer;transition:.12s}
+.doc-up:hover{border-color:var(--navy);background:var(--navy-50)}
+.doc-up.done{border-style:solid;border-color:var(--green);background:var(--green-50);cursor:default}
+.du-ic{width:38px;height:38px;border-radius:9px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0}
+.du-ic svg{width:18px;height:18px}
+.doc-up.done .du-ic{background:var(--green);border-color:var(--green);color:#fff}
+.du-main{flex:1;min-width:0}
+.du-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.du-top b{font-size:13px;color:var(--navy)}
+.du-meta{font-size:11px;color:var(--gray-400);margin-top:3px}
+.du-act{font-size:12.5px;color:var(--navy);font-weight:600;margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+.du-act svg{width:14px;height:14px}
+.du-file{font-size:12px;color:var(--gray-600);margin-top:5px}
+.du-file b{color:var(--navy);font-weight:600}
+.du-replace{background:none;border:none;color:var(--navy);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;padding:0;margin-top:6px}
+.du-replace:hover{text-decoration:underline}
+.du-thumb{width:36px;height:36px;border-radius:8px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;align-self:center}
+.du-thumb svg{width:20px;height:20px}
+.badge2.sm{padding:2px 8px;font-size:10px}
+.trust{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--gray-500);background:var(--navy-50);border-radius:8px;padding:8px 12px;margin:10px 0 16px}
+.trust svg{width:15px;height:15px;color:var(--navy);flex-shrink:0}
+@media(max-width:1024px){.doc-grid{grid-template-columns:1fr}}
+/* Password + OTP (admin step) */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:38px}
+.pw-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gray-400);padding:4px;display:flex}
+.pw-eye:hover{color:var(--navy)}
+.pw-eye svg{width:17px;height:17px}
+.pw-strength{display:flex;align-items:center;gap:9px;margin-top:6px}
+.pw-bars{display:flex;gap:4px;flex:1;max-width:160px}
+.pw-bars i{height:4px;flex:1;border-radius:2px;background:var(--gray-200);transition:.2s}
+.pw-lbl{font-size:11px;font-weight:700}
+.otp-block{border:1px solid var(--gray-200);border-radius:11px;padding:13px 14px;background:var(--gray-50)}
+.otp-sent{font-size:12.5px;color:var(--navy);font-weight:600;margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.otp-sent svg{width:15px;height:15px;color:var(--green)}
+.otp-mini{display:flex;gap:8px;flex-wrap:wrap}
+.otp-mini input{width:42px;height:48px;text-align:center;font-size:19px;font-weight:700;border:1.5px solid var(--gray-200);border-radius:9px;outline:none;color:var(--navy);background:#fff}
+.otp-mini input:focus{border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-50)}
+.otp-resend{font-size:12px;color:var(--gray-500);margin-top:11px}
+.otp-resend button{color:var(--navy);font-weight:700;background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;display:inline-flex;align-items:center;gap:4px}
+.otp-resend button:disabled{color:var(--gray-400);cursor:default}
+.otp-resend button svg{width:12px;height:12px}
+.otp-hint{font-size:12.5px;color:var(--gray-400)}
+.otp-demo{font-size:11px;color:var(--gray-400);margin-top:9px}
+.otp-demo b{color:var(--gray-500)}
+.otp-success{display:flex;align-items:center;gap:11px;background:var(--green-50);border:1px solid #b9e6c9;border-radius:10px;padding:11px 13px}
+.otp-success .sc{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.otp-success .sc svg{width:18px;height:18px}
+.otp-success b{font-size:13px;color:var(--green);display:block;line-height:1.3}
+.otp-success span{font-size:11.5px;color:var(--gray-500)}
+.otp-error{display:flex;align-items:center;gap:6px;color:var(--red);font-size:12px;font-weight:600;margin-top:9px}
+.otp-error svg{width:14px;height:14px;flex-shrink:0}
+.otp-mini input.bad{border-color:var(--red);background:var(--red-50)}
+.pw-lbl .pwok{color:var(--green)}
+.btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+.otp-verify-row{display:flex;gap:10px;align-items:center;margin-top:12px}
+.auth-logo{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px}
+.auth-logo .lg{width:50px;height:50px;border-radius:13px;background:var(--navy);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(15,43,91,.22)}
+.auth-logo .lg svg{width:28px;height:28px;color:#fff}
+.auth-logo .lt{text-align:center}
+.auth-logo .lt b{font-size:18px;color:var(--navy);font-weight:800;display:block;line-height:1.1}
+.auth-logo .lt span{font-size:12px;color:var(--gray-400)}
+.auth-card{width:100%;max-width:480px;background:#fff;border:1px solid var(--gray-200);border-radius:16px;box-shadow:0 4px 24px rgba(15,37,71,.06);padding:38px 40px}
+.auth-card .ac-head{text-align:center;margin-bottom:26px}
+.auth-card h2{font-size:24px;color:var(--navy);font-weight:800;margin-bottom:6px}
+.auth-card .ac-head p{color:var(--gray-500);font-size:14px}
+.auth-card .field{margin-bottom:16px}
+.auth-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:13px}
+.auth-row label{display:flex;align-items:center;gap:7px;color:var(--gray-600);cursor:pointer;font-weight:500}
+.auth-row label input{width:16px;height:16px;accent-color:var(--navy)}
+.auth-row .fp{color:var(--navy);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;font-size:13px}
+.auth-row .fp:hover{text-decoration:underline}
+.auth-foot{text-align:center;margin-top:24px;padding-top:22px;border-top:1px solid var(--gray-100);font-size:13.5px;color:var(--gray-500)}
+.auth-foot .reg{display:inline-block;margin-top:4px;color:var(--navy);font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;font-size:14px}
+.auth-foot .reg:hover{color:var(--navy-700)}
+.btn-block{width:100%;justify-content:center;padding:12px}
+.otp-row{display:flex;gap:10px;justify-content:center;margin:8px 0 22px}
+.otp-row input{width:50px;height:58px;text-align:center;font-size:23px;font-weight:700;border:1.5px solid var(--gray-200);border-radius:10px;outline:none;color:var(--navy)}
+.otp-row input:focus{border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-50)}
+.otp-mail{background:var(--navy-50);border-radius:9px;padding:11px 14px;font-size:13px;color:var(--navy);text-align:center;margin-bottom:20px;font-weight:600}
+.resend{text-align:center;font-size:13px;color:var(--gray-500);margin-top:16px}
+.resend button{color:var(--navy);font-weight:700;background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px}
+.resend button:hover{text-decoration:underline}
+.back-lnk{display:inline-flex;align-items:center;gap:6px;color:var(--gray-500);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;margin-bottom:20px}
+.back-lnk:hover{color:var(--navy)}
+@media(max-width:560px){.auth-card{padding:28px 22px}}
+@media(max-width:1024px){.sidebar{width:70px}.brand b,.brand span,.nav-label,.nav a span.txt,.nav a .badge,.sidebar-foot div{display:none}.brand{justify-content:center;padding:18px 0}.nav a{justify-content:center}.main{margin-left:70px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- Auth Layer -->
+<div id="auth">
+  <div id="authMain" style="width:100%;max-width:480px">
+    <!-- Login -->
+    <div id="authLogin">
+      <div class="auth-logo">
+        <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 11h2l1-2h12l1 2h2v6h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3z"/><path d="M11 5h2M12 4v3M10.5 5.5h3" stroke-width="1.6"/></svg></div>
+        <div class="lt"><b>Medurun</b><span>Agency Admin</span></div>
+      </div>
+      <div class="auth-card">
+        <div class="ac-head"><h2>Welcome Back</h2><p>Sign in to your approved agency account</p></div>
+        <div class="field"><label>Agency Email</label><input id="loginEmail" type="email" value="admin@rapidaid.in" placeholder="admin@agency.in"></div>
+        <div class="field"><label>Password</label><input id="loginPass" type="password" value="········" placeholder="••••••••"></div>
+        <div class="auth-row"><label><input type="checkbox" checked>Remember me</label><button class="fp" onclick="forgotPass()">Forgot password?</button></div>
+        <button class="btn btn-primary btn-block" onclick="doLogin()"><i data-ic="shield"></i>Sign In</button>
+        <div class="auth-foot">Need to onboard a new agency?<br><button class="reg" onclick="goRegister()">Start Agency Registration →</button></div>
+      </div>
+    </div>
+    <!-- OTP -->
+    <div id="authOtp" style="display:none">
+      <div class="auth-logo">
+        <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 11h2l1-2h12l1 2h2v6h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3z"/><path d="M11 5h2M12 4v3M10.5 5.5h3" stroke-width="1.6"/></svg></div>
+        <div class="lt"><b>Medurun</b><span>Agency Admin</span></div>
+      </div>
+      <div class="auth-card">
+        <button class="back-lnk" onclick="authStep('login')"><i data-ic="x"></i>Back to login</button>
+        <div class="ac-head"><h2>Verify it's you</h2><p>Enter the 6-digit code we sent to your registered mobile</p></div>
+        <div class="otp-mail" id="otpDest">+91 98200 •••00 · admin@rapidaid.in</div>
+        <div class="otp-row" id="otpRow"></div>
+        <button class="btn btn-primary btn-block" onclick="doVerify()"><i data-ic="check"></i>Verify &amp; Continue</button>
+        <div class="resend">Didn't get the code? <button onclick="resendOtp()">Resend OTP</button> <span id="otpTimer"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standalone Agency Registration Wizard (/agency-registration) -->
+  <div id="authRegister" style="width:100%;max-width:980px;display:none">
+    <div class="auth-logo">
+      <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 11h2l1-2h12l1 2h2v6h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3z"/><path d="M11 5h2M12 4v3M10.5 5.5h3" stroke-width="1.6"/></svg></div>
+      <div class="lt"><b>Medurun</b><span>Agency Onboarding</span></div>
+    </div>
+    <div class="auth-card" style="max-width:980px;padding:22px 26px">
+      <div id="wizProgress"></div>
+      <div id="wizBody"></div>
+    </div>
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--gray-400)">
+      Already approved? <button class="reg" style="font-size:13px;margin:0" onclick="wizToLogin()">Back to Login</button>
+    </div>
+  </div>
+
+  <!-- Forgot Password flow -->
+  <div id="authForgot" style="width:100%;max-width:480px;display:none">
+    <div class="auth-logo">
+      <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 11h2l1-2h12l1 2h2v6h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3z"/><path d="M11 5h2M12 4v3M10.5 5.5h3" stroke-width="1.6"/></svg></div>
+      <div class="lt"><b>Medurun</b><span>Agency Admin</span></div>
+    </div>
+    <div class="auth-card"><div id="fpBody"></div></div>
+  </div>
+</div>
+
+<div class="app" id="appShell" style="display:none">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 11h2l1-2h12l1 2h2v6h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3z"/><path d="M11 5h2M12 4v3M10.5 5.5h3" stroke-width="1.6"/></svg>
+      </div>
+      <div><b>Medurun</b><span>Agency Admin</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Operations</div>
+      <a data-page="dashboard" class="active"><i data-ic="grid"></i><span class="txt">Dashboard</span></a>
+      <a data-page="live"><i data-ic="activity"></i><span class="txt">Live Rides</span><span class="badge">4</span></a>
+      <a data-page="assignment"><i data-ic="map"></i><span class="txt">Assignment Map</span></a>
+      <a data-page="history"><i data-ic="clock"></i><span class="txt">Ride History</span></a>
+      <div class="nav-label">Fleet & Staff</div>
+      <a data-page="ambulances"><i data-ic="truck"></i><span class="txt">Ambulances</span></a>
+      <a data-page="drivers"><i data-ic="users"></i><span class="txt">Drivers</span></a>
+      <a data-page="verification"><i data-ic="shield"></i><span class="txt">Verification</span><span class="badge">7</span></a>
+      <div class="nav-label">Business</div>
+      <a data-page="revenue"><i data-ic="chart"></i><span class="txt">Revenue</span></a>
+      <a data-page="settings"><i data-ic="settings"></i><span class="txt">Settings</span></a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="avatar">RA</div>
+      <div style="flex:1"><b style="color:var(--navy);font-size:13px">Rapid Aid Pvt Ltd</b><br><span style="font-size:11px;color:var(--gray-400)">Verified Agency</span></div>
+      <button onclick="logout()" title="Sign out" style="background:none;border:none;cursor:pointer;color:var(--gray-400);padding:6px;border-radius:7px;display:flex"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="crumb" id="crumb">Operations</div>
+        <h1 id="ptitle">Dashboard</h1>
+      </div>
+      <div class="spacer"></div>
+      <div class="search"><i data-ic="search"></i><input placeholder="Search rides, drivers, ambulances..."></div>
+      <button class="icon-btn"><i data-ic="bell"></i><span class="dot"></span></button>
+      <button class="icon-btn"><i data-ic="help"></i></button>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- Drawer / Modal / Toast mounts -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+<div class="drawer" id="drawer"></div>
+<div class="modal" id="modal"></div>
+<div class="toast" id="toast"><i data-ic="check"></i><span id="toastMsg">Saved</span></div>
+
+<script>
+/* ---------- Icons ---------- */
+function ic(n){
+  const p={
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    map:'<polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    truck:'<path d="M1 3h13v11H1z"/><path d="M14 8h4l3 3v3h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
+    users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    shield:'<path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>',
+    chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+    help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    check:'<polyline points="20 6 9 17 4 12"/>',
+    plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    eyeoff:'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+    refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+    alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+    doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>',
+    upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+    money:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    trend:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+    car:'<path d="M5 17H3v-5l2-5h11l3 5v5h-2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/>',
+    x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>',
+    phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"/>',
+    star:'<polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/>',
+    pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
+  };
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(p[n]||'')+'</svg>';
+}
+
+/* ---------- Sample Data ---------- */
+const RIDES=[
+  ['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','08:12 AM','En Route','₹1,250','Jun 22','ALS'],
+  ['MED-2402','Vikram Patel','Suresh Yadav','MH14CD5678','08:45 AM','Completed','₹850','Jun 22','BLS'],
+  ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','09:20 AM','En Route','₹2,100','Jun 22','Neo'],
+  ['MED-2404','Farhan Khan','Rajesh Kumar','MH12AB1234','10:05 AM','Dispatched','₹1,400','Jun 22','ALS'],
+  ['MED-2405','Sunita Rao','Amit Verma','MH16GH3456','10:40 AM','Completed','₹650','Jun 22','BLS'],
+  ['MED-2406','Mohan Das','Suresh Yadav','MH14CD5678','11:15 AM','Cancelled','₹0','Jun 22','BLS'],
+  ['MED-2407','Priya Nair','Deepak Singh','MH12EF9012','11:50 AM','Completed','₹1,800','Jun 22','ALS'],
+];
+const AMBULANCES=[
+  ['MH12AB1234','Force Traveller','ALS','Rajesh Kumar','12 Aug 2026','30 Sep 2026','Active','Verified'],
+  ['MH14CD5678','Tata Winger','BLS','Suresh Yadav','05 Jul 2026','18 Dec 2026','Active','Verified'],
+  ['MH12EF9012','Maruti Eeco','Neo','Deepak Singh','22 Nov 2026','14 Mar 2027','Active','Verified'],
+  ['MH16GH3456','Mahindra Bolero','BLS','Amit Verma','01 Jul 2026','09 Oct 2026','Active','Pending'],
+  ['MH18IJ7890','Force Traveller','ALS','— Unassigned','15 Aug 2026','20 Nov 2026','Idle','Pending'],
+  ['MH20KL2345','Tata Winger','BLS','— Unassigned','28 Jun 2026','12 Jan 2027','Maintenance','Verified'],
+];
+const DRIVERS=[
+  ['Rajesh Kumar','+91 98200 11223','MH12AB1234',342,'4.8','On Duty','Verified'],
+  ['Suresh Yadav','+91 98200 44556','MH14CD5678',288,'4.6','On Duty','Verified'],
+  ['Deepak Singh','+91 98200 77889','MH12EF9012',410,'4.9','On Duty','Verified'],
+  ['Amit Verma','+91 98200 33221','MH16GH3456',156,'4.3','Off Duty','Pending'],
+  ['Manoj Tiwari','+91 98200 66554','— Unassigned',0,'—','Off Duty','Pending'],
+];
+const HISTORY=[
+  ['MED-2398','Jun 21, 07:30','Kiran Joshi','Rajesh Kumar','MH12AB1234','Andheri → Lilavati','Completed','₹1,150'],
+  ['MED-2399','Jun 21, 14:10','Asha Pillai','Suresh Yadav','MH14CD5678','Bandra → Holy Family','Completed','₹780'],
+  ['MED-2400','Jun 21, 19:45','Ramesh Iyer','Deepak Singh','MH12EF9012','Dadar → KEM Hospital','Cancelled','₹0'],
+  ['MED-2395','Jun 20, 06:15','Neha Gupta','Amit Verma','MH16GH3456','Powai → Hiranandani','Completed','₹920'],
+  ['MED-2396','Jun 20, 22:05','Imran Shaikh','Rajesh Kumar','MH12AB1234','Kurla → Sion Hospital','Completed','₹1,350'],
+];
+// [applicant, type, submittedDate, status, notes[], requestedOn]
+const VERIFY_DRIVERS=[
+  ['Manoj Tiwari','Driver','20 Jun 2026','Under Review',[],''],
+  ['Sanjay Pawar','Driver','19 Jun 2026','Submitted',[],''],
+  ['Ravi Chauhan','Driver','18 Jun 2026','Changes Requested',['Aadhaar image is blurry','Upload updated Police Clearance','EMT Certificate expired'],'20 Jun 2026'],
+  ['Deepak Singh','Driver','12 Jun 2026','Verified',[],''],
+];
+const VERIFY_AMB=[
+  ['MH16GH3456','Ambulance','21 Jun 2026','Under Review',[],''],
+  ['MH18IJ7890','Ambulance','20 Jun 2026','Submitted',[],''],
+  ['MH20KL2345','Ambulance','19 Jun 2026','Changes Requested',['Pollution certificate is missing','Upload a valid PUC copy'],'21 Jun 2026'],
+  ['MH22MN6789','Ambulance','14 Jun 2026','Action Required',['Insurance does not match the registration number on record','Re-upload corrected insurance document'],'16 Jun 2026'],
+];
+const TXNS=[
+  ['TXN-90231','Jun 22','Ride MED-2402','Credit','₹850'],
+  ['TXN-90230','Jun 22','Fuel — MH12AB1234','Debit','₹2,200'],
+  ['TXN-90228','Jun 21','Ride MED-2398','Credit','₹1,150'],
+  ['TXN-90225','Jun 21','Driver Incentive','Debit','₹1,500'],
+  ['TXN-90222','Jun 20','Ride MED-2396','Credit','₹1,350'],
+];
+
+/* ---------- Helpers ---------- */
+function badge(status){
+  const m={
+    'Completed':'b-green','Verified':'b-green','Active':'b-green','On Duty':'b-green','Available':'b-green',
+    'En Route':'b-amber','Pending':'b-amber','Dispatched':'b-navy','Idle':'b-gray','Off Duty':'b-gray',
+    'Cancelled':'b-red','Flagged':'b-red','Maintenance':'b-red','Rejected':'b-red','Missing':'b-red',
+    'Uploaded':'b-blue','Pending Verification':'b-amber','Changes Requested':'b-blue','Submitted':'b-gray','Under Review':'b-amber','Action Required':'b-red',
+    'Under Review':'b-amber','In Service':'b-blue'
+  };
+  return `<span class="badge2 ${m[status]||'b-gray'}">${status}</span>`;
+}
+function av(name){const i=name.replace(/[^A-Za-z ]/g,'').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';return `<div class="av">${i}</div>`}
+function toast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* ---------- Drawer / Modal ---------- */
+function openDrawer(html){document.getElementById('drawer').innerHTML=html;document.getElementById('drawer').classList.add('show');document.getElementById('overlay').classList.add('show')}
+function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('modal').classList.add('show');document.getElementById('overlay').classList.add('show')}
+function closeAll(){document.getElementById('drawer').classList.remove('show');document.getElementById('modal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show');if(!document.getElementById('drawer').classList.contains('show'))document.getElementById('overlay').classList.remove('show')}
+
+/* ---------- Pages ---------- */
+const PAGES={};
+
+PAGES.dashboard=()=>`
+  <div class="page-head"><div><h2>Good morning, Rapid Aid 👋</h2><p>Here's what's happening across your fleet today · Sunday, Jun 22, 2026</p></div>
+  <button class="btn btn-primary" onclick="go('live')">${ic('activity')}View Live Rides</button></div>
+  <div class="kpi-grid">
+    ${kpi('money','ico-green',"Today's Revenue",'₹8,000','+12.4%','up')}
+    ${kpi('trend','ico-red','Expenses','₹3,700','+4.1%','down')}
+    ${kpi('activity','ico-navy','Rides Today','7','+2','up')}
+    ${kpi('truck','ico-navy','Active Ambulances','4 / 6','','')}
+    ${kpi('users','ico-amber','Drivers on Duty','3','','')}
+    ${kpi('shield','ico-red','Pending Verifications','7','','')}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Today's Rides</h3>
+      <div class="filters">
+        <select><option>Date: Today</option><option>This Week</option><option>This Month</option></select>
+        <select><option>All Drivers</option><option>Rajesh Kumar</option><option>Suresh Yadav</option><option>Deepak Singh</option></select>
+        <select><option>All Ambulances</option><option>MH12AB1234</option><option>MH14CD5678</option></select>
+        <select><option>All Types</option><option>ALS</option><option>BLS</option><option>Neo</option></select>
+      </div>
+    </div>
+    <div class="card-body flush"><div class="tbl-wrap"><table>
+      <thead><tr><th>Ride ID</th><th>Patient</th><th>Driver</th><th>Ambulance</th><th>Pickup</th><th>Type</th><th>Status</th><th>Fare</th></tr></thead>
+      <tbody>${RIDES.map(r=>`<tr style="cursor:pointer" onclick="rideDrawer('${r[0]}')">
+        <td class="t-strong">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
+        <td><span class="badge2 b-navy">${r[8]}</span></td><td>${badge(r[5])}</td><td class="t-strong">${r[6]}</td></tr>`).join('')}</tbody>
+    </table></div></div>
+  </div>`;
+
+function kpi(icon,cls,label,val,delta,dir){
+  return `<div class="kpi"><div class="ico ${cls}">${ic(icon)}</div><div class="label">${label}</div><div class="val">${val}</div>
+  ${delta?`<span class="delta ${dir}">${dir==='up'?'▲':'▼'} ${delta} vs yesterday</span>`:'<span class="t-sub">Live now</span>'}</div>`;
+}
+
+PAGES.live=()=>`
+  <div class="page-head"><div><h2>Live Rides</h2><p>Real-time view of all active dispatches</p></div>
+  <span class="pulse"><span class="pd"></span>4 rides active</span></div>
+  <div class="live-grid">
+    ${liveCard('MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','Andheri Station','Lilavati Hospital','En Route','6 min','enroute')}
+    ${liveCard('MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','Kandivali','Surya Childrens','En Route','11 min','enroute')}
+    ${liveCard('MED-2404','Farhan Khan','Rajesh Kumar','MH18IJ7890','Sion','KEM Hospital','Dispatched','2 min','dispatch')}
+    ${liveCard('MED-2408','Geeta Bhosale','Suresh Yadav','MH14CD5678','Bandra West','Holy Family','On Scene','—','')}
+  </div>
+  <div class="card"><div class="card-head"><h3>Active Rides Table</h3></div>
+  <div class="card-body flush"><div class="tbl-wrap"><table>
+    <thead><tr><th>Ride ID</th><th>Patient</th><th>Driver</th><th>Ambulance</th><th>Pickup</th><th>Drop</th><th>Status</th><th>ETA</th></tr></thead>
+    <tbody>
+    ${[['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','Andheri','Lilavati','En Route','6 min'],
+      ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','Kandivali','Surya Childrens','En Route','11 min'],
+      ['MED-2404','Farhan Khan','Rajesh Kumar','MH18IJ7890','Sion','KEM Hospital','Dispatched','2 min'],
+      ['MED-2408','Geeta Bhosale','Suresh Yadav','MH14CD5678','Bandra','Holy Family','On Scene','—']]
+      .map(r=>`<tr><td class="t-strong">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${badge(r[6])}</td><td class="t-strong">${r[7]}</td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+
+function liveCard(id,pt,drv,amb,from,to,st,eta,cls){
+  return `<div class="lcard ${cls}">
+    <div class="lh"><b>${id}</b>${badge(st)}</div>
+    <div class="cell-user">${av(pt)}<div><b style="color:var(--navy);font-size:13px">${pt}</b><div class="t-sub">${drv} · ${amb}</div></div></div>
+    <div class="route"><div class="line"><div class="o"></div><div class="l"></div><div class="d"></div></div>
+      <div class="pts"><b>${from}</b><span>Pickup</span><b>${to}</b><span>Drop-off</span></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--gray-100)">
+      <span class="t-sub">ETA <b style="color:var(--navy)">${eta}</b></span>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Opening live track…')">${ic('pin')}Track</button></div></div>`;
+}
+
+PAGES.assignment=()=>`
+  <div class="page-head"><div><h2>Assignment Map</h2><p>Driver-to-ambulance assignments and live status</p></div></div>
+  <div class="chip-row" style="margin-bottom:18px" id="asgChips">
+    ${['All','Assigned','Unassigned','In Service','Available'].map((c,i)=>`<div class="chip ${i==0?'active':''}" onclick="chipPick(this,'asgChips')">${c}</div>`).join('')}
+  </div>
+  <div class="map-grid">
+    ${slot('MH12AB1234','ALS','Rajesh Kumar','In Service',false)}
+    ${slot('MH14CD5678','BLS','Suresh Yadav','On Scene',false)}
+    ${slot('MH12EF9012','Neo','Deepak Singh','In Service',false)}
+    ${slot('MH16GH3456','BLS','Amit Verma','Available',false)}
+    ${slot('MH18IJ7890','ALS','— No driver','Unassigned',true)}
+    ${slot('MH20KL2345','BLS','— No driver','Unassigned',true)}
+  </div>`;
+
+function slot(reg,cat,drv,st,un){
+  return `<div class="slot ${un?'unassigned':''}">
+    <div style="display:flex;justify-content:space-between;align-items:start"><div class="sicon">${ic('truck')}</div>${badge(st)}</div>
+    <div class="sreg">${reg}</div><div class="sdrv">${cat} · ${drv}</div>
+    <button class="btn ${un?'btn-primary':'btn-ghost'} btn-sm" style="width:100%" onclick="reassignModal('${reg}')">${un?'Assign Driver':'Reassign'}</button></div>`;
+}
+
+PAGES.history=()=>`
+  <div class="page-head"><div><h2>Ride History</h2><p>Complete log of past and ongoing rides</p></div>
+  <button class="btn btn-ghost">${ic('doc')}Export CSV</button></div>
+  <div class="chip-row" style="margin-bottom:16px" id="histChips">
+    ${['All','Today','This Week','This Month','Completed','En Route','Cancelled'].map((c,i)=>`<div class="chip ${i==0?'active':''}" onclick="chipPick(this,'histChips')">${c}</div>`).join('')}
+  </div>
+  <div class="card"><div class="card-body flush"><div class="tbl-wrap"><table>
+    <thead><tr><th>Ride ID</th><th>Date / Time</th><th>Patient</th><th>Driver</th><th>Ambulance</th><th>Route</th><th>Status</th><th>Fare</th></tr></thead>
+    <tbody>${HISTORY.concat(RIDES.filter(r=>r[5]!=='En Route'&&r[5]!=='Dispatched').map(r=>[r[0],r[7]+', '+r[4],r[1],r[2],r[3],'Mumbai',r[5],r[6]]))
+      .map(r=>`<tr><td class="t-strong">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${badge(r[6])}</td><td class="t-strong">${r[7]}</td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+
+let ambTab=0;
+const AMB_TABS=['All Ambulances','Verified','Pending Verification'];
+function ambFilter(){return AMBULANCES.filter(a=>ambTab===0?true:ambTab===1?a[7]==='Verified':a[7]==='Pending');}
+function ambRows(list){
+  if(!list.length)return `<tr><td colspan="9"><div class="empty">No ambulances match this view.</div></td></tr>`;
+  return list.map(a=>`<tr>
+    <td class="t-strong">${a[0]}</td><td>${a[1]}</td><td><span class="badge2 b-navy">${a[2]}</span></td><td>${a[3]}</td>
+    <td>${a[4]}</td><td>${a[5]}</td><td>${badge(a[6])}</td><td>${badge(a[7])}</td>
+    <td><div class="row-actions"><button class="iconbtn" title="View" onclick="ambDrawer('${a[0]}','view')">${ic('eye')}</button><button class="iconbtn" title="Edit" onclick="ambDrawer('${a[0]}','edit')">${ic('edit')}</button><button class="iconbtn" title="Documents" onclick="ambDrawer('${a[0]}','docs')">${ic('doc')}</button></div></td></tr>`).join('');
+}
+function renderAmb(){const list=ambFilter();
+  document.getElementById('ambBody').innerHTML=ambRows(list);
+  document.getElementById('ambCount').textContent=list.length+(list.length===1?' ambulance':' ambulances');
+  const b=document.getElementById('ambBanner');
+  b.innerHTML=ambTab===2?`<div style="padding:12px 16px 0"><div class="banner">${ic('alert')}<span>Showing <b>${list.length} ambulances</b> awaiting Medurun verification.</span></div></div>`:'';
+}
+function ambSetTab(el,i){ambTab=i;document.querySelectorAll('#ambTabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAmb();}
+PAGES.ambulances=()=>{ambTab=0;const list=ambFilter();return `
+  <div class="page-head"><div><h2>Ambulance Management</h2><p>Manage your fleet, documents and verification</p></div>
+  <button class="btn btn-primary" onclick="go('addambulance')">${ic('plus')}Add Ambulance</button></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    ${kpiMini('Total Fleet','6','ico-navy','truck')}${kpiMini('Verified','4','ico-green','shield')}${kpiMini('Pending','2','ico-amber','clock')}${kpiMini('In Service','3','ico-navy','activity')}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Fleet Directory</h3><span class="t-sub" id="ambCount">${list.length} ambulances</span></div>
+    <div style="padding:13px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--gray-100)">
+      <div class="search" style="margin:0">${ic('search')}<input placeholder="Search by registration, driver, or type..." style="width:300px;max-width:100%"></div>
+      <div class="filters" style="margin-left:auto">
+        <select><option>All Categories</option><option>ALS</option><option>BLS</option><option>Neo</option></select>
+        <select><option>All Status</option><option>Active</option><option>Idle</option><option>Maintenance</option></select>
+        <select><option>All Verification</option><option>Verified</option><option>Pending</option></select>
+      </div>
+    </div>
+    <div class="tabs" style="margin:0;padding:0 16px" id="ambTabs">
+      ${AMB_TABS.map((t,i)=>`<div class="tab ${i==0?'active':''}" onclick="ambSetTab(this,${i})">${t}</div>`).join('')}
+    </div>
+    <div id="ambBanner"></div>
+    <div class="card-body flush" style="padding-top:12px"><div class="tbl-wrap"><table>
+      <thead><tr><th>Registration</th><th>Type</th><th>Category</th><th>Assigned Driver</th><th>Insurance Exp.</th><th>Fitness Exp.</th><th>Status</th><th>Verification</th><th>Actions</th></tr></thead>
+      <tbody id="ambBody">${ambRows(list)}</tbody></table></div></div>
+  </div>`;};
+
+function kpiMini(l,v,cls,icon){return `<div class="kpi"><div class="ico ${cls}" style="width:34px;height:34px;margin-bottom:10px">${ic(icon)}</div><div class="label">${l}</div><div class="val" style="font-size:22px">${v}</div></div>`}
+
+function fleetCard(a){
+  return `<div class="fcard"><div class="ftop"><span class="cat">${a[2]}</span><span class="st">${badge(a[6])}</span>${ic('truck')}</div>
+    <div class="fbody"><div class="reg">${a[0]}</div><div class="meta">${a[1]} · ${a[7]}</div>
+    <div class="drv"><div class="av">${a[3].includes('Unassigned')?'?':a[3].split(' ').map(w=>w[0]).join('')}</div>
+      <div><b>${a[3]}</b><span>Insurance: ${a[4]}</span></div></div>
+    <div class="factions"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="ambDrawer('${a[0]}')">${ic('eye')}View</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="toast('Edit ${a[0]}')">${ic('edit')}Edit</button></div></div></div>`;
+}
+
+PAGES.drivers=()=>`
+  <div class="page-head"><div><h2>Driver Management</h2><p>Your driver directory and onboarding status</p></div>
+  <button class="btn btn-primary" onclick="go('adddriver')">${ic('plus')}Add Driver</button></div>
+  <div class="card">
+    <div class="card-head">
+      <div class="search" style="margin:0">${ic('search')}<input placeholder="Search by name or phone..." style="width:260px"></div>
+      <div class="filters"><select><option>All Status</option><option>On Duty</option><option>Off Duty</option></select>
+      <select><option>All Verification</option><option>Verified</option><option>Pending</option></select></div>
+    </div>
+    <div class="card-body flush"><div class="tbl-wrap"><table>
+      <thead><tr><th>Driver</th><th>Phone</th><th>Assigned Ambulance</th><th>Rides</th><th>Rating</th><th>Status</th><th>Verification</th><th>Actions</th></tr></thead>
+      <tbody>${DRIVERS.map(d=>`<tr>
+        <td><div class="cell-user">${av(d[0])}<span class="t-strong">${d[0]}</span></div></td>
+        <td>${d[1]}</td><td>${d[2]}</td><td>${d[3]}</td><td class="rating">${d[4]!=='—'?'★ '+d[4]:'—'}</td>
+        <td>${badge(d[5])}</td><td>${badge(d[6])}</td>
+        <td><div class="row-actions"><button class="iconbtn" title="View" onclick="driverDrawer('${d[0]}','view')">${ic('eye')}</button><button class="iconbtn" title="Edit" onclick="driverDrawer('${d[0]}','edit')">${ic('edit')}</button><button class="iconbtn" title="Documents" onclick="driverDrawer('${d[0]}','docs')">${ic('doc')}</button></div></td></tr>`).join('')}
+      </tbody></table></div></div>
+  </div>`;
+
+let verTab='drv';
+function vqAll(){return VERIFY_DRIVERS.concat(VERIFY_AMB);}
+function vqCount(status){return vqAll().filter(v=>v[3]===status).length;}
+function verRows(kind){const arr=kind==='drv'?VERIFY_DRIVERS:VERIFY_AMB;
+  if(!arr.length)return `<tr><td colspan="4"><div class="empty"><div style="font-size:30px;margin-bottom:6px">✅</div><b style="color:var(--navy);display:block;font-size:15px">No submissions yet</b><span>Submitted drivers and ambulances will appear here.</span></div></td></tr>`;
+  return arr.map(v=>`<tr style="cursor:pointer" onclick="verifyDrawer('${v[0]}','${kind}')">
+    <td><div class="cell-user">${kind==='drv'?av(v[0]):'<div class="av" style="background:var(--navy-50);color:var(--navy)">'+ic('truck')+'</div>'}<span class="t-strong">${v[0]}</span></div></td>
+    <td class="t-sub">${v[2]}</td>
+    <td>${badge(v[3])}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();verifyDrawer('${v[0]}','${kind}')">${ic('eye')}View Submission</button></td></tr>`).join('');
+}
+function verSwap(kind){verTab=kind;document.getElementById('verBody').innerHTML=verRows(kind);}
+function kpiMiniId(id,l,v,cls,icon){return `<div class="kpi"><div class="ico ${cls}" style="width:34px;height:34px;margin-bottom:10px">${ic(icon)}</div><div class="label">${l}</div><div class="val" id="${id}" style="font-size:22px">${v}</div></div>`}
+function updateVerUI(){
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('vqSubmitted',vqCount('Submitted'));set('vqReview',vqCount('Under Review'));set('vqChanges',vqCount('Changes Requested'));set('vqVerified',vqCount('Verified'));
+  set('vqDrvCount',VERIFY_DRIVERS.length);set('vqAmbCount',VERIFY_AMB.length);
+  const body=document.getElementById('verBody');if(body)body.innerHTML=verRows(verTab);
+}
+PAGES.verification=()=>{verTab='drv';return `
+  <div class="page-head"><div><h2>Verification Status</h2><p>Track approval progress for submitted drivers and ambulances.</p></div></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    ${kpiMiniId('vqSubmitted','Submitted',vqCount('Submitted'),'ico-navy','doc')}${kpiMiniId('vqReview','Under Review',vqCount('Under Review'),'ico-amber','clock')}${kpiMiniId('vqChanges','Changes Requested',vqCount('Changes Requested'),'ico-amber','edit')}${kpiMiniId('vqVerified','Verified',vqCount('Verified'),'ico-green','shield')}
+  </div>
+  <div class="tabs" id="verTabs">
+    <div class="tab active" onclick="tabPick(this,'verTabs');verSwap('drv')">Driver Submissions <span class="count" id="vqDrvCount">${VERIFY_DRIVERS.length}</span></div>
+    <div class="tab" onclick="tabPick(this,'verTabs');verSwap('amb')">Ambulance Submissions <span class="count" id="vqAmbCount">${VERIFY_AMB.length}</span></div>
+  </div>
+  <div class="card"><div class="card-body flush"><div class="tbl-wrap"><table id="verTbl">
+    <thead><tr><th>Applicant</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="verBody">${verRows('drv')}</tbody>
+  </table></div></div></div>`;};
+
+PAGES.revenue=()=>`
+  <div class="page-head"><div><h2>Revenue & Transactions</h2><p>Financial overview · June 2026</p></div>
+  <button class="btn btn-ghost">${ic('doc')}Download Report</button></div>
+  <div class="kpi-grid">
+    ${kpi('money','ico-green','Monthly Revenue','₹4,82,000','+8.6%','up')}
+    ${kpi('trend','ico-red','Monthly Expenses','₹2,14,500','+3.2%','down')}
+    ${kpi('chart','ico-navy','Net Profit','₹2,67,500','+13.1%','up')}
+    ${kpi('activity','ico-amber','Total Rides','312','+24','up')}
+  </div>
+  <div class="card"><div class="card-head"><h3>Revenue vs Expenses (6 months)</h3>
+    <div class="legend" style="margin:0"><span><i style="background:var(--navy)"></i>Revenue</span><span><i style="background:var(--red)"></i>Expenses</span></div></div>
+    <div class="card-body"><div class="chart">
+      ${[['Jan',62,38],['Feb',70,42],['Mar',58,40],['Apr',75,45],['May',82,48],['Jun',96,52]].map(m=>`
+        <div class="bar-col"><div class="bars">
+          <div class="bar rev" style="height:${m[1]}%" title="₹${m[1]}k"></div>
+          <div class="bar exp" style="height:${m[2]}%" title="₹${m[2]}k"></div></div><div class="lb">${m[0]}</div></div>`).join('')}
+    </div></div></div>
+  <div class="card"><div class="card-head"><h3>Recent Transactions</h3></div>
+    <div class="card-body flush"><div class="tbl-wrap"><table>
+      <thead><tr><th>Txn ID</th><th>Date</th><th>Description</th><th>Type</th><th>Amount</th></tr></thead>
+      <tbody>${TXNS.map(t=>`<tr><td class="t-strong">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td>
+        <td><span class="badge2 ${t[3]==='Credit'?'b-green':'b-red'}">${t[3]}</span></td>
+        <td class="t-strong" style="color:${t[3]==='Credit'?'var(--green)':'var(--red)'}">${t[3]==='Credit'?'+':'–'}${t[4]}</td></tr>`).join('')}
+      </tbody></table></div></div></div>`;
+
+PAGES.settings=()=>`
+  <div class="page-head"><div><h2>Settings & Agency Profile</h2><p>Manage your organization details and preferences</p></div>
+  <button class="btn btn-primary" onclick="toast('Settings saved')">${ic('check')}Save Changes</button></div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" class="settings-cols">
+    <div>
+      <div class="card"><div class="card-head"><h3>Agency Profile</h3></div><div class="card-body">
+        <div class="form-grid">
+          <div class="field"><label>Agency Name</label><input value="Rapid Aid Pvt Ltd"></div>
+          <div class="field"><label>Registration Number</label><input value="MH/AMB/2021/0457"></div>
+          <div class="field"><label>GSTIN</label><input value="27AABCR1234M1Z5"></div>
+          <div class="field"><label>Contact Person</label><input value="Sunil Raghavan"></div>
+          <div class="field full"><label>Business Address</label><input value="402 Sai Plaza, SV Road, Andheri West, Mumbai 400058"></div>
+          <div class="field"><label>Email</label><input value="admin@rapidaid.in"></div>
+          <div class="field"><label>Mobile</label><input value="+91 98200 00100"></div>
+        </div>
+      </div></div>
+      <div class="card"><div class="card-head"><h3>Commission</h3></div><div class="card-body">
+        <div class="field"><label>Medurun Platform Commission (%)</label>
+          <input type="number" value="12" style="max-width:160px">
+          <span class="hint">Percentage deducted by Medurun per completed ride. Set during onboarding.</span></div>
+      </div></div>
+      <div class="card"><div class="card-head"><h3>Notification Preferences</h3></div><div class="card-body" style="padding-top:4px">
+        ${pref('New ride assigned','Push + SMS when a ride is dispatched',true)}
+        ${pref('Verification updates','Alerts when docs are approved/rejected',true)}
+        ${pref('Document expiry reminders','30-day warning before insurance/fitness expiry',true)}
+        ${pref('Weekly revenue summary','Email digest every Monday',false)}
+      </div></div>
+    </div>
+    <div>
+      <div class="card"><div class="card-head"><h3>Branding / Logo</h3></div><div class="card-body">
+        <div style="text-align:center;margin-bottom:16px"><div style="width:90px;height:90px;border-radius:16px;background:var(--navy);display:flex;align-items:center;justify-content:center;margin:0 auto;color:#fff">${ic('truck')}</div></div>
+        <div class="upload" onclick="this.classList.add('done');this.querySelector('.ttl').textContent='logo.png uploaded'">${ic('upload')}<div class="ttl">Upload new logo</div><div class="sub">PNG/SVG, max 2MB</div></div>
+        <div class="field" style="margin-top:14px"><label>Brand Accent Color</label>
+          <div style="display:flex;gap:8px"><div style="width:34px;height:34px;border-radius:8px;background:var(--navy);border:2px solid var(--navy)"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:var(--red)"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#0d9488"></div></div></div>
+      </div></div>
+      <div class="card"><div class="card-head"><h3>Status</h3></div><div class="card-body">
+        <dl class="dl"><dt>Account</dt><dd>${badge('Verified')}</dd><dt>Plan</dt><dd>Medurun Partner</dd><dt>Joined</dt><dd>Mar 2021</dd><dt>Agency ID</dt><dd>MDR-AG-0457</dd></dl>
+      </div></div>
+    </div>
+  </div>`;
+
+function pref(t,s,on){return `<div class="pref-row"><div><b>${t}</b><br><span>${s}</span></div><div class="toggle ${on?'on':''}" onclick="this.classList.toggle('on')"></div></div>`}
+
+/* ---------- Registration (multi-step) ---------- */
+/* ---------- Standalone Agency Registration Wizard (/agency-registration) ---------- */
+let wizStep=1;
+const WIZ_STEPS=[['Agency Details','Business info'],['Documents','Upload proofs'],['Admin Account','Login setup'],['Review','Confirm & submit'],['Submitted','Done']];
+function wizProgress(){
+  return `<div class="stepper" style="max-width:none">`+WIZ_STEPS.map((s,i)=>{const n=i+1;const cls=n<wizStep?'done':n==wizStep?'active':'';
+    return `<div class="step ${cls}"><div class="dot">${n<wizStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<WIZ_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;
+}
+const REG_DOCS=[
+  {n:'Business Registration Certificate',req:true,f:'business-reg-cert.pdf',s:'1.2 MB'},
+  {n:'GST Certificate',req:true,f:'gst-certificate.pdf',s:'845 KB'},
+  {n:'PAN Card',req:true,f:'pan-card.pdf',s:'512 KB'},
+  {n:'Address Proof',req:true,f:'address-proof.pdf',s:'2.1 MB'},
+  {n:'Agency Logo',req:false,logo:true,f:'agency-logo.png',s:'96 KB'},
+  {n:'NABH / ISO Certification',req:false,opt:true,f:'nabh-iso-cert.pdf',s:'1.8 MB'},
+];
+function docInner(i){const d=REG_DOCS[i];
+  const badge=d.req?'<span class="badge2 b-navy sm">Required</span>':'<span class="badge2 b-gray sm">Optional</span>';
+  if(!d.done)return `<div class="du-ic">${ic('upload')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${badge}</div>
+    <div class="du-meta">PDF, JPG, PNG · max 5 MB</div>
+    <div class="du-act">${ic('upload')}Upload file</div></div>`;
+  return `<div class="du-ic">${ic('check')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b><span class="badge2 b-green sm">Uploaded</span></div>
+    <div class="du-file"><b>${d.f}</b> · ${d.s}</div>
+    <button class="du-replace" onclick="replaceDoc(event,${i})">Replace file</button></div>
+    ${d.logo?`<div class="du-thumb">${ic('truck')}</div>`:''}`;
+}
+function doUpload(i){const d=REG_DOCS[i];if(d.done)return;d.done=true;
+  const el=document.getElementById('doc-card-'+i);el.classList.add('done');el.innerHTML=docInner(i);updateDocCount();}
+function replaceDoc(e,i){e.stopPropagation();toast('Choose a new file to replace');}
+function togglePw(id,btn){const inp=document.getElementById(id);const show=inp.type==='password';inp.type=show?'text':'password';btn.innerHTML=ic(show?'eyeoff':'eye');}
+function pwStrength(){const v=(document.getElementById('wizPw')||{}).value||'';const bars=document.querySelectorAll('#wizBody .pw-bars i');const lbl=document.getElementById('pwLbl');
+  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v)&&/[^A-Za-z0-9]/.test(v))s++;
+  const map={0:['',var0()],1:['Weak','var(--red)'],2:['Medium','var(--amber)'],3:['Strong','var(--green)']};
+  function var0(){return 'var(--gray-400)'}
+  const col=v?map[s][1]:'var(--gray-400)';
+  bars.forEach((b,i)=>b.style.background=(v&&i<s)?col:'var(--gray-200)');
+  lbl.style.color=col;
+  if(!v){lbl.textContent='Enter password';}
+  else if(s>=3){lbl.innerHTML='<span class="pwok">✓ Strong · meets requirements</span>';}
+  else{lbl.textContent=map[s][0]||'Weak';}
+}
+let wizOtpInt,wizMobileVerified=false;
+const WIZ_OTP_CODE='123456';
+function setWizContinue(){const c=document.getElementById('wizContinue');if(c)c.disabled=!wizMobileVerified;}
+function wizResetVerify(){ // mobile changed → invalidate prior verification
+  if(wizMobileVerified){wizMobileVerified=false;setWizContinue();
+    const block=document.getElementById('wizOtpBlock');if(block)block.innerHTML='<div class="otp-hint">Click "Send OTP" to receive a 6-digit code on your mobile.</div>';}
+}
+function wizSendOtp(){
+  wizMobileVerified=false;setWizContinue();
+  const m=(document.getElementById('wizMobile').value||'').replace(/\s/g,'');const last4=m.slice(-4)||'4521';
+  const block=document.getElementById('wizOtpBlock');
+  block.innerHTML=`<div class="otp-sent">${ic('check')}OTP sent to +91 •••••• ${last4}</div>
+    <div class="otp-mini" id="wizOtpRow">${[0,1,2,3,4,5].map(i=>`<input maxlength="1" inputmode="numeric" data-i="${i}">`).join('')}</div>
+    <div class="otp-verify-row"><button type="button" class="btn btn-primary btn-sm" onclick="wizVerifyOtp()">Verify OTP</button>
+      <span class="otp-resend">Resend OTP <button id="wizResend" onclick="wizSendOtp()" disabled><span id="wizOtpTimer"></span></button></span></div>
+    <div class="otp-demo">Demo code: <b>${WIZ_OTP_CODE}</b></div>`;
+  const ins=[...block.querySelectorAll('#wizOtpRow input')];
+  ins.forEach((inp,i)=>{inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'').slice(0,1);
+      ins.forEach(x=>x.classList.remove('bad'));const er=document.getElementById('wizOtpErr');if(er)er.remove();
+      if(inp.value&&i<5)ins[i+1].focus();});
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)ins[i-1].focus()});});
+  ins[0].focus();
+  let t=30;const btn=document.getElementById('wizResend');const tm=document.getElementById('wizOtpTimer');
+  clearInterval(wizOtpInt);btn.disabled=true;tm.textContent='in 30s';
+  wizOtpInt=setInterval(()=>{t--;if(t>0){tm.textContent='in '+t+'s';}else{tm.textContent='now';btn.disabled=false;clearInterval(wizOtpInt);}},1000);
+  toast('OTP sent to +91 •••••• '+last4);
+}
+function wizVerifyOtp(){
+  const ins=[...document.querySelectorAll('#wizOtpRow input')];
+  const code=ins.map(i=>i.value).join('');
+  if(code.length<6){toast('Enter all 6 digits');return;}
+  if(code===WIZ_OTP_CODE){
+    wizMobileVerified=true;clearInterval(wizOtpInt);
+    document.getElementById('wizOtpBlock').innerHTML=`<div class="otp-success"><div class="sc">${ic('check')}</div>
+      <div><b>Mobile Number Verified</b><span>OTP verified successfully</span></div></div>`;
+    setWizContinue();toast('Mobile number verified');
+  }else{
+    ins.forEach(i=>i.classList.add('bad'));
+    if(!document.getElementById('wizOtpErr')){const d=document.createElement('div');d.id='wizOtpErr';d.className='otp-error';
+      d.innerHTML=ic('alert')+'Invalid OTP. Please try again.';document.getElementById('wizOtpRow').after(d);}
+  }
+}
+function updateDocCount(){const total=REG_DOCS.filter(d=>d.req).length,done=REG_DOCS.filter(d=>d.req&&d.done).length;
+  const el=document.getElementById('docCount');if(el)el.textContent=done+' / '+total+' uploaded';}
+function wizBody(){
+  if(wizStep===1)return `
+    <h3 style="color:var(--navy);font-size:16px">Agency Details</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:6px">Tell us about your ambulance agency.</p>
+    <div class="wiz-sec-h">Agency Information</div>
+    <div class="form-grid">
+      <div class="field"><label>Agency Name <span class="req">*</span></label><input placeholder="e.g. Rapid Aid Pvt Ltd"></div>
+      <div class="field"><label>Registration Number <span class="req">*</span></label><input placeholder="MH/AMB/2021/0457"></div>
+      <div class="field"><label>GSTIN <span class="req">*</span></label><input placeholder="27AABCR1234M1Z5"></div>
+      <div class="field"><label>Year of Establishment</label><input placeholder="2021" type="number"></div>
+      <div class="field"><label>Total Ambulances</label><input placeholder="6" type="number"></div>
+    </div>
+    <div class="wiz-sec-h">Location</div>
+    <div class="form-grid">
+      <div class="field full"><label>Business Address <span class="req">*</span></label><input placeholder="Street, building, area"></div>
+      <div class="field"><label>City <span class="req">*</span></label><input placeholder="Mumbai"></div>
+      <div class="field"><label>State <span class="req">*</span></label><select><option>Maharashtra</option><option>Delhi</option><option>Karnataka</option><option>Gujarat</option></select></div>
+    </div>
+    <div class="wiz-sec-h">Contact Information</div>
+    <div class="form-grid">
+      <div class="field"><label>Contact Person <span class="req">*</span></label><input placeholder="Full name"></div>
+      <div class="field"><label>Designation</label><input placeholder="Operations Manager"></div>
+      <div class="field"><label>Email <span class="req">*</span></label><input type="email" placeholder="admin@agency.in"></div>
+      <div class="field"><label>Mobile <span class="req">*</span></label><input placeholder="+91 ..."></div>
+    </div>
+    <div class="wiz-actions end"><button class="btn btn-primary" onclick="wizGo(2)">Continue →</button></div>`;
+  if(wizStep===2){const reqDocs=REG_DOCS.map((d,i)=>i).filter(i=>REG_DOCS[i].req);const addDocs=REG_DOCS.map((d,i)=>i).filter(i=>!REG_DOCS[i].req);
+    return `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+      <div><h3 style="color:var(--navy);font-size:16px">Document Upload</h3>
+      <p style="color:var(--gray-500);font-size:12.5px">Provide your agency's verification documents.</p></div>
+      <div class="count-pill"><span class="cl">Required Documents</span><span class="cv" id="docCount">0 / ${reqDocs.length} uploaded</span></div>
+    </div>
+    <div class="trust">${ic('shield')}All documents are securely uploaded and reviewed by the Medurun verification team.</div>
+    <div class="wiz-sec-h">Required Documents</div>
+    <div class="doc-grid">${reqDocs.map(i=>`<div class="doc-up${REG_DOCS[i].done?' done':''}" id="doc-card-${i}" onclick="doUpload(${i})">${docInner(i)}</div>`).join('')}</div>
+    <div class="wiz-sec-h">Additional Documents</div>
+    <div class="doc-grid">${addDocs.map(i=>`<div class="doc-up${REG_DOCS[i].done?' done':''}" id="doc-card-${i}" onclick="doUpload(${i})">${docInner(i)}</div>`).join('')}</div>
+    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(1)">← Back</button><button class="btn btn-primary" onclick="wizGo(3)">Continue →</button></div>`;}
+  if(wizStep===3)return `
+    <h3 style="color:var(--navy);font-size:16px">Admin Account Setup</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:6px">Create the administrator login and verify your mobile number.</p>
+    <div class="form-grid">
+      <div class="field full"><label>Admin Email <span class="req">*</span></label><input type="email" value="admin@rapidaid.in" placeholder="admin@agency.in"></div>
+      <div class="field"><label>Password <span class="req">*</span></label>
+        <div class="pw-wrap"><input id="wizPw" type="password" oninput="pwStrength()" placeholder="••••••••"><button type="button" class="pw-eye" onclick="togglePw('wizPw',this)">${ic('eye')}</button></div>
+        <div class="pw-strength"><div class="pw-bars"><i></i><i></i><i></i></div><span class="pw-lbl" id="pwLbl" style="color:var(--gray-400)">Enter password</span></div>
+      </div>
+      <div class="field"><label>Confirm Password <span class="req">*</span></label>
+        <div class="pw-wrap"><input id="wizPw2" type="password" placeholder="••••••••"><button type="button" class="pw-eye" onclick="togglePw('wizPw2',this)">${ic('eye')}</button></div></div>
+      <div class="field full"><label>Mobile Number <span class="req">*</span></label>
+        <div style="display:flex;gap:8px"><input id="wizMobile" value="+91 98765 04521" style="flex:1" placeholder="+91 ..." oninput="wizResetVerify()"><button type="button" class="btn btn-ghost" id="wizSendBtn" onclick="wizSendOtp()">Send OTP</button></div></div>
+      <div class="field full"><label>OTP Verification <span class="req">*</span></label>
+        <div class="otp-block" id="wizOtpBlock"><div class="otp-hint">Click "Send OTP" to receive a 6-digit code on your mobile.</div></div></div>
+    </div>
+    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(2)">← Back</button><button class="btn btn-primary" id="wizContinue" onclick="wizGo(4)" ${wizMobileVerified?'':'disabled'}>Continue →</button></div>`;
+  if(wizStep===4)return `
+    <h3 style="color:var(--navy);font-size:17px;margin-bottom:4px">Review &amp; Submit</h3>
+    <p style="color:var(--gray-500);font-size:13px;margin-bottom:18px">Confirm everything is correct before submitting for Super Admin approval.</p>
+    <div class="sec-title">Agency Details</div>
+    <dl class="dl"><dt>Agency Name</dt><dd>Rapid Aid Pvt Ltd</dd><dt>Reg. Number</dt><dd>MH/AMB/2021/0457</dd><dt>GSTIN</dt><dd>27AABCR1234M1Z5</dd><dt>City / State</dt><dd>Mumbai, Maharashtra</dd><dt>Ambulances</dt><dd>6</dd><dt>Contact</dt><dd>Sunil Raghavan · +91 98200 00100</dd></dl>
+    <div class="sec-title">Documents</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">${['Business Reg. Cert.','GST Certificate','PAN Card','Address Proof','Agency Logo'].map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
+    <div class="sec-title">Admin Account</div>
+    <dl class="dl"><dt>Admin Email</dt><dd>admin@rapidaid.in</dd><dt>Mobile</dt><dd>Verified ✓</dd></dl>
+    <label class="check" style="margin-top:20px"><input type="checkbox" id="wizTerms">I confirm the above information is accurate and agree to Medurun's partner terms.</label>
+    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(3)">← Back</button><button class="btn btn-primary" onclick="wizSubmit()">${ic('check')}Submit Application</button></div>`;
+  // step 5 — submitted
+  return `<div class="success-wrap" style="box-shadow:none;border:none;padding:14px 10px;max-width:none">
+    <div class="circle">${ic('check')}</div>
+    <h2>Application Submitted!</h2>
+    <p>Thank you. Your registration is now under review by the Medurun Super Admin team.</p>
+    <div class="refbox"><div class="lbl">Application Reference ID</div><div class="ref">MDR-APP-2026-7841</div>${badge('Under Review')}</div>
+    <p style="font-size:13px">You'll be notified at <b>admin@rapidaid.in</b> once approved (typically 2–3 business days). Dashboard access stays locked until your agency is approved.</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
+      <button class="btn btn-ghost" onclick="toast('Reference copied')">Copy Reference ID</button>
+      <button class="btn btn-primary" onclick="wizToLogin()">Back to Login</button></div></div>`;
+}
+function up(label,req){return `<div class="upload" onclick="this.classList.add('done');this.querySelector('.ttl').textContent='Uploaded ✓';this.querySelector('.sub').textContent='${label.replace(/'/g,'')}.pdf'">
+  ${ic('upload')}<div class="ttl">${label}${req?' <span class="req">*</span>':''}</div><div class="sub">Click to upload</div></div>`}
+function wizRender(){document.getElementById('wizProgress').innerHTML=wizProgress();document.getElementById('wizBody').innerHTML=wizBody();document.getElementById('auth').scrollTop=0}
+function wizGo(n){wizStep=n;wizRender()}
+function wizSubmit(){const t=document.getElementById('wizTerms');if(t&&!t.checked){toast('Please confirm the declaration');return;}wizStep=5;wizRender();}
+function startRegistration(){wizStep=1;REG_DOCS.forEach(d=>d.done=false);wizMobileVerified=false;document.getElementById('auth').classList.add('registering');document.getElementById('authMain').style.display='none';document.getElementById('authRegister').style.display='block';wizRender();document.getElementById('auth').scrollTop=0}
+function wizToLogin(){wizStep=1;document.getElementById('auth').classList.remove('registering');document.getElementById('authRegister').style.display='none';document.getElementById('authMain').style.display='block';authStep('login')}
+
+/* ---------- Add Ambulance ---------- */
+/* ---------- Add Ambulance wizard ---------- */
+let aaStep=1;const aaEquip=new Set(['Oxygen Cylinder','Stretcher','First Aid Kit']);
+const AA_EQUIP=['Oxygen Cylinder','Defibrillator','Ventilator','Stretcher','Suction Apparatus','First Aid Kit','ECG Monitor','Spine Board','Infusion Pump','Wheelchair'];
+const AA_STEPS=[['Vehicle','Details'],['Equipment','Checklist'],['Documents','Photos & files'],['Review','Confirm'],['Submit','Done']];
+const AA_DOCS=['Front Photo','Side Photo','Interior Photo','RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit'];
+function aaProgress(){return `<div class="stepper" style="max-width:none;margin-bottom:24px">`+AA_STEPS.map((s,i)=>{const n=i+1;const cls=n<aaStep?'done':n==aaStep?'active':'';
+  return `<div class="step ${cls}"><div class="dot">${n<aaStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<AA_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;}
+function aaEquipBody(){return `<div class="equip-bar"><div><h3 style="color:var(--navy);font-size:16px">Equipment Checklist</h3><p style="color:var(--gray-500);font-size:12.5px">Select all equipment available in this ambulance.</p></div>
+    <div class="equip-count"><b id="aaEquipN">${aaEquip.size}</b> / ${AA_EQUIP.length} selected</div></div>
+  <div class="equip-grid">${AA_EQUIP.map(e=>`<div class="equip-chip ${aaEquip.has(e)?'on':''}" onclick="toggleEquip(this,'${e}')"><span class="ck">${ic('check')}</span>${e}</div>`).join('')}</div>`;}
+function toggleEquip(el,name){if(aaEquip.has(name)){aaEquip.delete(name);el.classList.remove('on');}else{aaEquip.add(name);el.classList.add('on');}document.getElementById('aaEquipN').textContent=aaEquip.size;}
+function aaBody(){
+  if(aaStep===1)return `
+    <h3 style="color:var(--navy);font-size:16px">Vehicle Details</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Basic identification for the vehicle.</p>
+    <div class="form-grid">
+      <div class="field"><label>Registration No. <span class="req">*</span></label><input id="aaReg" value="MH12AB1234" placeholder="MH12AB1234"></div>
+      <div class="field"><label>Vehicle Type / Model <span class="req">*</span></label><input id="aaModel" value="Force Traveller" placeholder="Force Traveller"></div>
+      <div class="field"><label>Category <span class="req">*</span></label><select id="aaCat"><option>ALS — Advanced Life Support</option><option>BLS — Basic Life Support</option><option>Neo — Neonatal</option></select></div>
+      <div class="field"><label>Manufacture Year</label><input id="aaYear" type="number" value="2023" placeholder="2023"></div>
+      <div class="field"><label>Chassis No.</label><input id="aaChassis" placeholder="MAT..."></div>
+      <div class="field"><label>Engine No.</label><input id="aaEngine" placeholder="ENG..."></div>
+    </div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="go('ambulances')">Cancel</button><button class="btn btn-primary" onclick="aaGo(2)">Continue →</button></div>`;
+  if(aaStep===2)return aaEquipBody()+`
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(1)">← Back</button><button class="btn btn-primary" onclick="aaGo(3)">Continue →</button></div>`;
+  if(aaStep===3)return `
+    <h3 style="color:var(--navy);font-size:16px">Documents &amp; Photos</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Upload vehicle photos and required documents (PDF/JPG/PNG).</p>
+    <div class="upload-grid">${AA_DOCS.map(d=>up(d,true)).join('')}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(2)">← Back</button><button class="btn btn-primary" onclick="aaGo(4)">Continue →</button></div>`;
+  if(aaStep===4){const g=id=>(document.getElementById(id)||{}).value||'—';
+    return `
+    <h3 style="color:var(--navy);font-size:16px">Review</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Confirm details before submitting for verification.</p>
+    <div class="sec-title" style="margin-top:6px">Vehicle Details <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(1)">Edit</button></div>
+    <dl class="dl"><dt>Registration</dt><dd>${aaReview.reg}</dd><dt>Model</dt><dd>${aaReview.model}</dd><dt>Category</dt><dd>${aaReview.cat}</dd><dt>Manufacture Year</dt><dd>${aaReview.year}</dd></dl>
+    <div class="sec-title">Equipment (${aaEquip.size}) <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(2)">Edit</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">${aaEquip.size?[...aaEquip].map(e=>`<span class="badge2 b-navy">${e}</span>`).join(''):'<span class="t-sub">No equipment selected</span>'}</div>
+    <div class="sec-title">Documents &amp; Photos <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(3)">Edit</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">${AA_DOCS.map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(3)">← Back</button><button class="btn btn-primary" onclick="aaSubmit()">${ic('check')}Submit for Verification</button></div>`;}
+  // step 5
+  return `<div class="success-wrap" style="box-shadow:none;border:none;max-width:none;padding:14px 10px">
+    <div class="circle">${ic('check')}</div>
+    <h2>Ambulance Submitted</h2>
+    <p>${aaReview.reg} has been submitted to the Medurun team for verification.</p>
+    <div class="refbox" style="max-width:340px;margin:0 auto 22px"><div class="lbl">Status</div>${badge('Under Review')}</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-ghost" onclick="aaReset();go('addambulance')">Add Another</button>
+      <button class="btn btn-primary" onclick="go('ambulances')">Back to Fleet</button></div></div>`;
+}
+let aaReview={reg:'MH12AB1234',model:'Force Traveller',cat:'ALS — Advanced Life Support',year:'2023'};
+function aaCapture(){const g=id=>(document.getElementById(id)||{}).value;
+  if(document.getElementById('aaReg'))aaReview={reg:g('aaReg')||'—',model:g('aaModel')||'—',cat:g('aaCat')||'—',year:g('aaYear')||'—'};}
+function aaRender(){document.getElementById('aaProgress').innerHTML=aaProgress();document.getElementById('aaBody').innerHTML=aaBody();window.scrollTo(0,0);}
+function aaGo(n){if(aaStep===1)aaCapture();aaStep=n;aaRender();}
+function aaSubmit(){aaStep=5;aaRender();toast('Ambulance submitted for verification');}
+function aaReset(){aaStep=1;aaEquip.clear();['Oxygen Cylinder','Stretcher','First Aid Kit'].forEach(e=>aaEquip.add(e));aaReview={reg:'MH12AB1234',model:'Force Traveller',cat:'ALS — Advanced Life Support',year:'2023'};}
+PAGES.addambulance=()=>{aaStep=1;return `
+  <div style="max-width:900px;margin:0 auto">
+    <div class="page-head"><div><h2>Add Ambulance</h2><p>Register a new vehicle to your fleet</p></div></div>
+    <div class="card"><div class="card-body">
+      <div id="aaProgress">${aaProgress()}</div>
+      <div id="aaBody">${aaBody()}</div>
+    </div></div>
+  </div>`;};
+
+/* ---------- Add Driver wizard ---------- */
+let dwStep=1;
+const DW_STEPS=[['Personal','Details'],['Credentials','License & ID'],['Documents','Photos & files'],['Review','Confirm'],['Submit','Done']];
+const DW_DOCS=['Driver Photo','Driving License','Aadhaar Card','EMT Certificate','Police Clearance','Medical Fitness'];
+let dwReview={name:'New Driver',mobile:'+91 ...',email:'driver@rapidaid.in',license:'—'};
+function dwProgress(){return `<div class="stepper" style="max-width:none;margin-bottom:24px">`+DW_STEPS.map((s,i)=>{const n=i+1;const cls=n<dwStep?'done':n==dwStep?'active':'';
+  return `<div class="step ${cls}"><div class="dot">${n<dwStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<DW_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;}
+function dwBody(){
+  if(dwStep===1)return `
+    <h3 style="color:var(--navy);font-size:16px">Personal Details</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Basic information about the driver.</p>
+    <div class="form-grid">
+      <div class="field"><label>Full Name <span class="req">*</span></label><input id="dwName" value="Manoj Tiwari" placeholder="Driver full name"></div>
+      <div class="field"><label>Mobile <span class="req">*</span></label><input id="dwMobile" value="+91 98200 66554" placeholder="+91 ..."></div>
+      <div class="field"><label>Email</label><input id="dwEmail" type="email" value="manoj@rapidaid.in" placeholder="driver@email.in"></div>
+      <div class="field"><label>Date of Birth <span class="req">*</span></label><input type="date"></div>
+      <div class="field"><label>Blood Group</label><select><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select></div>
+      <div class="field"><label>Experience (years)</label><input type="number" value="4" placeholder="5"></div>
+    </div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="go('drivers')">Cancel</button><button class="btn btn-primary" onclick="dwGo(2)">Continue →</button></div>`;
+  if(dwStep===2)return `
+    <h3 style="color:var(--navy);font-size:16px">Credentials</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">License and identification details.</p>
+    <div class="form-grid">
+      <div class="field"><label>Driving License No. <span class="req">*</span></label><input id="dwLicense" value="MH01 20180012345" placeholder="MH01 20210012345"></div>
+      <div class="field"><label>EMT Certificate No.</label><input value="EMT-2019-0421" placeholder="EMT-..."></div>
+      <div class="field"><label>Aadhaar No. <span class="req">*</span></label><input value="XXXX XXXX 4821" placeholder="XXXX XXXX XXXX"></div>
+      <div class="field"><label>Blood Group</label><select><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
+    </div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(1)">← Back</button><button class="btn btn-primary" onclick="dwGo(3)">Continue →</button></div>`;
+  if(dwStep===3)return `
+    <h3 style="color:var(--navy);font-size:16px">Documents</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Upload the driver's photo and required documents (PDF/JPG/PNG).</p>
+    <div class="upload-grid">${DW_DOCS.map((d,i)=>up(d,i!==3)).join('')}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(2)">← Back</button><button class="btn btn-primary" onclick="dwGo(4)">Continue →</button></div>`;
+  if(dwStep===4)return `
+    <h3 style="color:var(--navy);font-size:16px">Review</h3>
+    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Confirm details before submitting for verification.</p>
+    <div class="sec-title" style="margin-top:6px">Personal Details <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(1)">Edit</button></div>
+    <dl class="dl"><dt>Full Name</dt><dd>${dwReview.name}</dd><dt>Mobile</dt><dd>${dwReview.mobile}</dd><dt>Email</dt><dd>${dwReview.email}</dd></dl>
+    <div class="sec-title">Credentials <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(2)">Edit</button></div>
+    <dl class="dl"><dt>License No.</dt><dd>${dwReview.license}</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Aadhaar</dt><dd>XXXX XXXX 4821</dd></dl>
+    <div class="sec-title">Documents <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(3)">Edit</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">${DW_DOCS.map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(3)">← Back</button><button class="btn btn-primary" onclick="dwSubmit()">${ic('check')}Submit for Verification</button></div>`;
+  // step 5
+  return `<div class="success-wrap" style="box-shadow:none;border:none;max-width:none;padding:14px 10px">
+    <div class="circle">${ic('check')}</div>
+    <h2>Driver Submitted</h2>
+    <p>${dwReview.name} has been submitted to the Medurun team for verification.</p>
+    <div class="refbox" style="max-width:340px;margin:0 auto 22px"><div class="lbl">Status</div>${badge('Under Review')}</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-ghost" onclick="dwReset();go('adddriver')">Add Another</button>
+      <button class="btn btn-primary" onclick="go('drivers')">Back to Drivers</button></div></div>`;
+}
+function dwCapture(){const g=id=>(document.getElementById(id)||{}).value;
+  if(document.getElementById('dwName'))dwReview={...dwReview,name:g('dwName')||'—',mobile:g('dwMobile')||'—',email:g('dwEmail')||'—'};
+  if(document.getElementById('dwLicense'))dwReview={...dwReview,license:g('dwLicense')||'—'};}
+function dwRender(){document.getElementById('dwProgress').innerHTML=dwProgress();document.getElementById('dwBody').innerHTML=dwBody();window.scrollTo(0,0);}
+function dwGo(n){if(document.getElementById('dwName')||document.getElementById('dwLicense'))dwCapture();dwStep=n;dwRender();}
+function dwSubmit(){dwStep=5;dwRender();toast('Driver submitted for verification');}
+function dwReset(){dwStep=1;dwReview={name:'New Driver',mobile:'+91 ...',email:'driver@rapidaid.in',license:'—'};}
+PAGES.adddriver=()=>{dwStep=1;return `
+  <div style="max-width:900px;margin:0 auto">
+    <div class="page-head"><div><h2>Add Driver</h2><p>Onboard a new driver to your agency</p></div></div>
+    <div class="card"><div class="card-body">
+      <div id="dwProgress">${dwProgress()}</div>
+      <div id="dwBody">${dwBody()}</div>
+    </div></div>
+  </div>`;};
+
+/* ---------- Drawers ---------- */
+function rideDrawer(id){
+  const r=RIDES.find(x=>x[0]===id)||RIDES[0];
+  openDrawer(`<div class="drawer-head"><h3>Ride ${r[0]}</h3><div class="x" onclick="closeAll()">${ic('x')}</div></div>
+  <div class="drawer-body">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">${av(r[1])}<div><b style="color:var(--navy);font-size:16px">${r[1]}</b><div class="t-sub">${badge(r[5])} · ${r[8]} Ambulance</div></div></div>
+    <div class="sec-title">Trip</div>
+    <dl class="dl"><dt>Driver</dt><dd>${r[2]}</dd><dt>Ambulance</dt><dd>${r[3]}</dd><dt>Pickup Time</dt><dd>${r[4]}</dd><dt>Date</dt><dd>${r[7]}</dd><dt>Type</dt><dd>${r[8]}</dd><dt>Fare</dt><dd>${r[6]}</dd></dl>
+    <div class="sec-title">Route</div>
+    <div class="route" style="margin:0"><div class="line"><div class="o"></div><div class="l" style="min-height:36px"></div><div class="d"></div></div>
+      <div class="pts"><b>Andheri Station, West</b><span>Pickup · ${r[4]}</span><b>Lilavati Hospital, Bandra</b><span>Drop-off</span></div></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="toast('Invoice generated')">${ic('doc')}Invoice</button><button class="btn btn-primary" style="flex:1" onclick="closeAll()">Close</button></div>`);
+}
+const AMB_DOC_DEFS=['RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit','Front Photo','Side Photo','Interior Photo'];
+const DRV_DOC_DEFS=['Driver Photo','Driving License','Aadhaar','EMT Certificate','Police Clearance','Medical Fitness'];
+let curDocs={defs:[],state:[]}; // shared doc context for whichever drawer is open
+function ambStatuses(a){return AMB_DOC_DEFS.map((d,i)=>a[7]==='Verified'?(i<6?'Verified':'Uploaded'):['Verified','Uploaded','Pending Verification','Pending Verification','Missing','Uploaded','Pending Verification','Missing'][i%8]);}
+function drvStatuses(d){return DRV_DOC_DEFS.map((x,i)=>d[6]==='Verified'?(i<5?'Verified':'Uploaded'):['Verified','Uploaded','Pending Verification','Missing','Pending Verification','Uploaded'][i%6]);}
+function ambSetDocs(a){curDocs={defs:AMB_DOC_DEFS,state:ambStatuses(a)};return docRowsHTML();}
+function drvSetDocs(d){curDocs={defs:DRV_DOC_DEFS,state:drvStatuses(d)};return docRowsHTML();}
+function docRow(i){const d=curDocs.defs[i],st=curDocs.state[i];
+  const acts=[];
+  if(st!=='Missing')acts.push(`<button onclick="docView(${i})">View file</button>`);
+  acts.push(`<button onclick="docReplace(${i})">${st==='Missing'?'Upload file':'Replace file'}</button>`);
+  if(st==='Uploaded')acts.push(`<button class="req" onclick="docRequest(${i})">Request verification</button>`);
+  return `<div class="ddoc" id="ddoc-${i}"><div class="di">${ic('doc')}</div><div class="dn"><b>${d}</b><div class="da">${acts.join('<span style="color:var(--gray-300)">·</span>')}</div></div>${badge(st)}</div>`;
+}
+function docRowsHTML(){return curDocs.defs.map((d,i)=>docRow(i)).join('');}
+function refreshDocRow(i){const el=document.getElementById('ddoc-'+i);if(el)el.outerHTML=docRow(i);}
+function docTitle(i){const n=curDocs.defs[i];return n.includes('Photo')?n:n+' Document';}
+function docView(i){const n=curDocs.defs[i],isPhoto=n.includes('Photo');
+  openModal(`<div class="modal-head"><h3>${docTitle(i)}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body">
+      <div style="border:1px solid var(--gray-200);border-radius:11px;background:var(--gray-50);height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--gray-400)">
+        <div style="width:54px;height:54px;border-radius:12px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--navy)">${ic(isPhoto?'truck':'doc')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-500)">${n}${isPhoto?'.jpg':'.pdf'}</div>
+        <div style="font-size:11.5px">Sample ${isPhoto?'image':'PDF'} preview</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="toast('Downloading ${n}')">${ic('doc')}Download</button></div>`);
+}
+function docReplace(i){const n=curDocs.defs[i];
+  openModal(`<div class="modal-head"><h3>Replace ${docTitle(i)}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body">
+      <div class="upload" id="repUp" onclick="this.classList.add('done');this.querySelector('.ttl').textContent='${n.replace(/'/g,'')} ready to upload';this.querySelector('.sub').textContent='new-file${n.includes('Photo')?'.jpg':'.pdf'} · 1.4 MB'">
+        ${ic('upload')}<div class="ttl">Drop a file here or click to browse</div><div class="sub">PDF, JPG, PNG · max 5 MB</div></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="docDoReplace(${i})">${ic('upload')}Upload &amp; Replace</button></div>`);
+}
+function docDoReplace(i){curDocs.state[i]='Uploaded';refreshDocRow(i);closeModal();toast(curDocs.defs[i]+' replaced · status Uploaded');}
+function docRequest(i){const n=curDocs.defs[i];
+  openModal(`<div class="modal-head"><h3>Request Verification</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body"><div style="display:flex;gap:12px;align-items:flex-start">
+      <div class="da-ic" style="background:var(--amber-50);color:var(--amber)">${ic('shield')}</div>
+      <div><p style="font-size:14px;color:var(--navy);font-weight:600;margin-bottom:4px">Request Medurun verification for this document?</p>
+      <p style="font-size:12.5px;color:var(--gray-500)">${docTitle(i)} will be submitted to the Medurun team and marked as Pending Verification until reviewed.</p></div>
+    </div></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="docDoRequest(${i})">${ic('check')}Request Verification</button></div>`);
+}
+function docDoRequest(i){curDocs.state[i]='Pending Verification';refreshDocRow(i);closeModal();toast('Verification requested for '+curDocs.defs[i]);}
+function ambDrawer(reg,mode){
+  mode=mode||'view';
+  const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];
+  const head=`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic">${ic('truck')}</div>
+      <div style="min-width:0"><h3>${mode==='edit'?'Edit Ambulance':a[0]}</h3>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px"><span class="badge2 b-navy" style="padding:2px 8px;font-size:10px">${a[2]}</span>${badge(a[6])}${badge(a[7])}</div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>`;
+
+  if(mode==='edit'){
+    openDrawer(head+`<div class="drawer-body">
+      <div class="dsec"><h4>Vehicle Details</h4>
+        <div class="form-grid">
+          <div class="field"><label>Registration No</label><input value="${a[0]}"></div>
+          <div class="field"><label>Vehicle Type / Model</label><input value="${a[1]}"></div>
+          <div class="field"><label>Category</label><select><option ${a[2]==='ALS'?'selected':''}>ALS</option><option ${a[2]==='BLS'?'selected':''}>BLS</option><option ${a[2]==='Neo'?'selected':''}>Neo</option></select></div>
+          <div class="field"><label>Manufacture Year</label><input type="number" value="2023"></div>
+          <div class="field"><label>Chassis No</label><input placeholder="MAT..."></div>
+          <div class="field"><label>Engine No</label><input placeholder="ENG..."></div>
+          <div class="field"><label>Insurance Expiry</label><input value="${a[4]}"></div>
+          <div class="field"><label>Fitness Expiry</label><input value="${a[5]}"></div>
+        </div></div>
+      <div class="dsec"><h4>Assignment</h4>
+        <div class="form-grid">
+          <div class="field"><label>Assigned Driver</label><select>${DRIVERS.map(d=>`<option ${a[3].includes(d[0])?'selected':''}>${d[0]}</option>`).join('')}<option ${a[3].includes('Unassigned')?'selected':''}>— Unassigned</option></select></div>
+          <div class="field"><label>Status</label><select>${['Active','Idle','Maintenance'].map(s=>`<option ${a[6]===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        </div></div>
+    </div>
+    <div class="drawer-foot"><button class="btn btn-ghost" style="flex:1" onclick="ambDrawer('${reg}','view')">Cancel</button><button class="btn btn-primary" style="flex:2" onclick="toast('Changes saved');closeAll()">${ic('check')}Save Changes</button></div>`);
+    return;
+  }
+
+  // view / docs
+  openDrawer(head+`<div class="drawer-body" id="ambDrawerBody">
+    <div class="dsec"><h4>Vehicle Details</h4>
+      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Category</dt><dd>${a[2]}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
+    <div class="dsec"><h4>Assigned Driver</h4>
+      ${a[3].includes('Unassigned')?'<span class="t-sub">No driver assigned</span>':`<div class="cell-user">${av(a[3])}<div><b style="color:var(--navy)">${a[3]}</b><div class="t-sub">On Duty</div></div></div>`}</div>
+    <div class="dsec"><h4>Expiry Dates</h4>
+      <dl class="dl"><dt>Insurance</dt><dd>${a[4]}</dd><dt>Fitness</dt><dd>${a[5]}</dd></dl></div>
+    <div class="dsec ${mode==='docs'?'focus':''}" id="ambDocsSec"><h4>Documents</h4>
+      ${ambSetDocs(a)}</div>
+    <div class="dsec"><h4>Verification Notes</h4>
+      <p style="font-size:12.5px;color:var(--gray-600)">${a[7]==='Verified'?'All documents verified by the Medurun team. No action required.':'Awaiting verification. Some documents are pending review or missing.'}</p></div>
+  </div>
+  <div class="drawer-foot" style="justify-content:flex-end"><button class="btn btn-ghost" onclick="closeAll()">Close</button><button class="btn btn-primary" onclick="ambDrawer('${reg}','edit')">${ic('edit')}Edit Ambulance</button></div>`);
+  if(mode==='docs')setTimeout(()=>{const s=document.getElementById('ambDocsSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},260);
+}
+function driverDrawer(name,mode){
+  mode=mode||'view';
+  const d=DRIVERS.find(x=>x[0]===name)||DRIVERS[0];
+  const initials=d[0].split(' ').map(w=>w[0]).join('');
+  const head=`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic" style="border-radius:50%;background:var(--navy);color:#fff;font-weight:700">${initials}</div>
+      <div style="min-width:0"><h3>${mode==='edit'?'Edit Driver':d[0]}</h3>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">${badge(d[5])}${badge(d[6])}</div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>`;
+
+  if(mode==='edit'){
+    openDrawer(head+`<div class="drawer-body">
+      <div class="dsec"><h4>Personal Details</h4>
+        <div class="form-grid">
+          <div class="field"><label>Full Name</label><input value="${d[0]}"></div>
+          <div class="field"><label>Mobile</label><input value="${d[1]}"></div>
+          <div class="field"><label>Email</label><input value="${d[0].split(' ')[0].toLowerCase()}@rapidaid.in"></div>
+          <div class="field"><label>Date of Birth</label><input value="14 May 1988"></div>
+          <div class="field"><label>Blood Group</label><select><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
+          <div class="field"><label>Experience (years)</label><input type="number" value="7"></div>
+        </div></div>
+      <div class="dsec"><h4>Credentials</h4>
+        <div class="form-grid">
+          <div class="field"><label>License Number</label><input value="MH01 20180012345"></div>
+          <div class="field"><label>EMT Certificate Number</label><input value="EMT-2019-0421"></div>
+          <div class="field"><label>Aadhaar Number</label><input value="XXXX XXXX 4821"></div>
+        </div></div>
+      <div class="dsec"><h4>Assignment</h4>
+        <div class="form-grid">
+          <div class="field"><label>Assigned Ambulance</label><select>${AMBULANCES.map(a=>`<option ${d[2]===a[0]?'selected':''}>${a[0]}</option>`).join('')}<option ${d[2].includes('Unassigned')?'selected':''}>— Unassigned</option></select></div>
+          <div class="field"><label>Status</label><select>${['On Duty','Off Duty'].map(s=>`<option ${d[5]===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        </div></div>
+    </div>
+    <div class="drawer-foot"><button class="btn btn-ghost" onclick="driverDrawer('${name}','view')">Cancel</button><button class="btn btn-primary" onclick="toast('Driver changes saved');closeAll()">${ic('check')}Save Changes</button></div>`);
+    return;
+  }
+
+  // view / docs
+  openDrawer(head+`<div class="drawer-body">
+    <div class="dsec"><h4>Activity</h4>
+      <div class="stat-mini"><div><b>${d[3]}</b><span>Total Rides</span></div><div><b class="rating">${d[4]!=='—'?'★ '+d[4]:'—'}</b><span>Rating</span></div><div><b>${d[2].includes('Unassigned')?'—':d[2]}</b><span>Ambulance</span></div></div></div>
+    <div class="dsec"><h4>Contact</h4>
+      <dl class="dl"><dt>Phone</dt><dd>${d[1]}</dd><dt>Email</dt><dd>${d[0].split(' ')[0].toLowerCase()}@rapidaid.in</dd></dl></div>
+    <div class="dsec"><h4>Personal</h4>
+      <dl class="dl"><dt>DOB</dt><dd>14 May 1988</dd><dt>Blood Group</dt><dd>O+</dd><dt>Experience</dt><dd>7 years</dd></dl></div>
+    <div class="dsec"><h4>Credentials</h4>
+      <dl class="dl"><dt>License No.</dt><dd>MH01 20180012345</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Aadhaar</dt><dd>XXXX XXXX 4821</dd></dl></div>
+    <div class="dsec"><h4>Assigned Ambulance</h4>
+      ${d[2].includes('Unassigned')?'<span class="t-sub">No ambulance assigned</span>':`<span class="badge2 b-navy">${d[2]}</span>`}</div>
+    <div class="dsec ${mode==='docs'?'focus':''}" id="drvDocsSec"><h4>Documents</h4>
+      ${drvSetDocs(d)}</div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="closeAll()">Close</button><button class="btn btn-primary" onclick="driverDrawer('${name}','edit')">${ic('edit')}Edit Driver</button></div>`);
+  if(mode==='docs')setTimeout(()=>{const s=document.getElementById('drvDocsSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},260);
+}
+function vqFindArr(kind){return kind==='drv'?VERIFY_DRIVERS:VERIFY_AMB;}
+function vqDocRow(name,st,canReplace){
+  const acts=[`<button onclick="vqPreview('${name}')">Preview</button>`,`<button onclick="vqDownload('${name}')">Download</button>`];
+  if(canReplace)acts.push(`<button class="req" onclick="vqReplaceDoc('${name}')">Replace File</button>`);
+  return `<div class="ddoc"><div class="di">${ic('doc')}</div><div class="dn"><b>${name}</b>
+    <div class="da">${acts.join('<span style="color:var(--gray-300)">·</span>')}</div></div>${badge(st)}</div>`;
+}
+function vqPreview(name){const isPhoto=/photo/i.test(name);
+  openModal(`<div class="modal-head"><h3>${name}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body">
+      <div style="border:1px solid var(--gray-200);border-radius:11px;background:var(--gray-50);height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--gray-400)">
+        <div style="width:54px;height:54px;border-radius:12px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--navy)">${ic(isPhoto?'truck':'doc')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-500)">${name}${isPhoto?'.jpg':'.pdf'}</div>
+        <div style="font-size:11.5px">Sample ${isPhoto?'image':'PDF'} preview</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-ghost" onclick="toast('Opened ${name} in new tab')">${ic('eye')}Open in new tab</button><button class="btn btn-primary" onclick="vqDownload('${name}')">${ic('doc')}Download</button></div>`);
+}
+function vqDownload(name){toast('✓ Document downloaded');}
+function vqReplaceDoc(name){const isPhoto=/photo/i.test(name);
+  openModal(`<div class="modal-head"><h3>Replace ${name}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body">
+      <div class="upload" onclick="this.classList.add('done');this.querySelector('.ttl').textContent='${name} ready to upload';this.querySelector('.sub').textContent='new-file${isPhoto?'.jpg':'.pdf'} · 1.4 MB'">
+        ${ic('upload')}<div class="ttl">Drop a file here or click to browse</div><div class="sub">PDF, JPG, PNG · max 5 MB</div></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal();toast('✓ Document re-uploaded')">${ic('upload')}Upload &amp; Replace</button></div>`);
+}
+function vqScroll(id){const s=document.getElementById(id);if(s)s.scrollIntoView({behavior:'smooth',block:'start'});}
+function vqResubmit(name,kind){const it=vqFindArr(kind).find(v=>v[0]===name);if(it){it[3]='Under Review';it[4]=[];it._resubmitted='Just now';}
+  closeAll();updateVerUI();toast('✓ Verification resubmitted');}
+function vqDocStatus(item,doc){const s=item[3];
+  if(s==='Verified')return 'Verified';
+  if(s==='Submitted'||s==='Under Review')return 'Submitted';
+  const keys={'Driving License':'license','Aadhaar':'aadhaar','EMT Certificate':'emt','Police Clearance':'police clearance','Medical Fitness':'medical fitness','RC':'rc','Insurance':'insurance','Fitness Certificate':'fitness','Pollution Certificate':'pollution','Commercial Permit':'permit','Photos':'photo'};
+  const fb=(item[4]||[]).join(' ').toLowerCase(),k=keys[doc]||'~~';
+  if(fb.includes(k))return s==='Action Required'?'Action Required':'Changes Requested';
+  return 'Verified';
+}
+function vqTimeline(item){const s=item[3],d=item[2],req=item[5]||d;
+  const ev=[['Submitted',d+' · 09:14 AM','done']];
+  if(s!=='Submitted')ev.push(['Under Review',d+' · 11:40 AM','done']);
+  else ev.push(['Under Review','Awaiting Medurun review','amber']);
+  if(s==='Changes Requested')ev.push(['Changes Requested',req+' · 02:45 PM','amber']);
+  if(s==='Action Required')ev.push(['Action Required',req+' · 03:10 PM','red']);
+  if(item._resubmitted)ev.push(['Resubmitted',item._resubmitted,'done']);
+  if(s==='Verified')ev.push(['Verified',d+' · 11:20 AM','green']);
+  return `<div class="vq-tl">${ev.map(e=>`<div class="ev ${e[2]==='done'?'':e[2]}"><b>${e[0]}</b><span>${e[1]}</span></div>`).join('')}</div>`;
+}
+function verifyDrawer(name,kind){
+  const isDrv=kind==='drv';
+  const item=(isDrv?VERIFY_DRIVERS:VERIFY_AMB).find(v=>v[0]===name)||(isDrv?VERIFY_DRIVERS:VERIFY_AMB)[0];
+  const status=item[3],canReplace=(status==='Changes Requested');
+  const ambRec=AMBULANCES.find(a=>a[0]===name);
+  const docs=isDrv?['Driving License','Aadhaar','EMT Certificate','Police Clearance','Medical Fitness']
+    :['RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit','Photos'];
+  const head=`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic"${isDrv?' style="border-radius:50%;background:var(--navy);color:#fff;font-weight:700"':''}>${isDrv?name.split(' ').map(w=>w[0]).join(''):ic('truck')}</div>
+      <div style="min-width:0"><h3>${name}</h3>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px">${badge(status)}<span class="t-sub">Submitted ${item[2]}</span></div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>`;
+  const detailSec=isDrv?`
+    <div class="dsec"><h4>Personal Information</h4>
+      <dl class="dl"><dt>Full Name</dt><dd>${name}</dd><dt>Mobile</dt><dd>+91 98200 66554</dd><dt>Email</dt><dd>${name.split(' ')[0].toLowerCase()}@rapidaid.in</dd><dt>DOB</dt><dd>14 May 1988</dd></dl></div>
+    <div class="dsec"><h4>Driver Details</h4>
+      <dl class="dl"><dt>License No.</dt><dd>MH01 20180012345</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Experience</dt><dd>4 years</dd><dt>Blood Group</dt><dd>O+</dd></dl></div>`
+  :`
+    <div class="dsec"><h4>Vehicle Details</h4>
+      <dl class="dl"><dt>Registration</dt><dd>${name}</dd><dt>Category</dt><dd>${ambRec?ambRec[2]:'BLS'}</dd><dt>Model</dt><dd>${ambRec?ambRec[1]:'Tata Winger'}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
+    <div class="dsec"><h4>Assigned Driver</h4>
+      ${(ambRec||['','','','— Unassigned'])[3].includes('Unassigned')?'<span class="t-sub">No driver assigned</span>':`<div class="cell-user">${av(ambRec[3])}<div><b style="color:var(--navy)">${ambRec[3]}</b><div class="t-sub">On Duty</div></div></div>`}</div>`;
+  // Medurun Review Notes (Changes Requested or Action Required)
+  const needsAction=(status==='Changes Requested'||status==='Action Required');
+  let notesSec='';
+  if(needsAction){const red=status==='Action Required';
+    notesSec=`<div class="dsec" id="vqNotesSec" style="border-color:${red?'#f3c0c0':'#f3d9a8'};background:${red?'var(--red-50)':'var(--amber-50)'}">
+      <h4 style="color:${red?'var(--red)':'#8a5a09'}">Medurun Review Notes</h4>
+      <div style="display:flex;flex-direction:column;gap:7px">${(item[4]||[]).map(n=>`<div style="display:flex;gap:8px;font-size:13px;color:${red?'#a51f1f':'#7a5208'}"><span>⚠</span><span>${n}</span></div>`).join('')}</div>
+      <div style="font-size:11.5px;color:var(--gray-500);margin-top:10px">Requested on: ${item[5]||item[2]}</div></div>`;
+  }else if(status==='Verified'){
+    notesSec=`<div class="dsec" style="border-color:#b9e6c9;background:var(--green-50)"><div style="display:flex;gap:11px;align-items:center"><div class="da-ic" style="background:var(--green);color:#fff">${ic('check')}</div><div><b style="color:var(--green);font-size:14px;display:block">Verified by Medurun</b><span style="font-size:12px;color:var(--gray-500)">This ${isDrv?'driver':'ambulance'} is approved and active. No action needed.</span></div></div></div>`;
+  }
+  // Contextual footer (agency admin: no approve/reject — track & respond only)
+  let footer=`<button class="btn btn-ghost" onclick="closeAll()">Close</button>`;
+  if(status==='Changes Requested')
+    footer+=`<button class="btn btn-primary" onclick="vqScroll('vqDocsSec')">${ic('upload')}Upload Updated Documents</button>`;
+  else if(status==='Action Required')
+    footer+=`<button class="btn btn-primary" onclick="vqResubmit('${name}','${kind}')">${ic('refresh')}Resubmit Verification</button>`;
+  openDrawer(head+`<div class="drawer-body">
+    ${notesSec}
+    ${detailSec}
+    <div class="dsec ${canReplace?'focus':''}" id="vqDocsSec"><h4>Submitted Documents</h4>
+      ${docs.map(d=>vqDocRow(d,vqDocStatus(item,d),canReplace)).join('')}</div>
+    <div class="dsec"><h4>Verification Timeline</h4>${vqTimeline(item)}</div>
+  </div>
+  <div class="drawer-foot">${footer}</div>`);
+}
+function reassignModal(reg){
+  openModal(`<div class="modal-head"><h3>Reassign Driver — ${reg}</h3><div class="x" onclick="closeAll()">${ic('x')}</div></div>
+  <div class="modal-body">
+    <div class="field"><label>Select Driver</label><select>
+      ${DRIVERS.map(d=>`<option>${d[0]} — ${d[5]}${d[2].includes('Unassigned')?' (available)':''}</option>`).join('')}
+    </select></div>
+    <div class="field" style="margin-top:14px"><label>Shift</label><select><option>Day (6 AM – 6 PM)</option><option>Night (6 PM – 6 AM)</option><option>Full day</option></select></div>
+    <div class="field" style="margin-top:14px"><label>Note (optional)</label><input placeholder="Reason for reassignment"></div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeAll()">Cancel</button><button class="btn btn-primary" onclick="toast('Driver reassigned to ${reg}');closeAll()">Confirm Assignment</button></div>`);
+}
+
+/* ---------- Tabs / Chips ---------- */
+function tabPick(el,group){document.querySelectorAll('#'+group+' .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+function chipPick(el,group){document.querySelectorAll('#'+group+' .chip').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+
+/* ---------- Router ---------- */
+const TITLES={dashboard:['Operations','Dashboard'],live:['Operations','Live Rides'],assignment:['Operations','Assignment Map'],history:['Operations','Ride History'],
+  ambulances:['Fleet & Staff','Ambulances'],addambulance:['Fleet & Staff','Add Ambulance'],drivers:['Fleet & Staff','Drivers'],adddriver:['Fleet & Staff','Add Driver'],
+  verification:['Fleet & Staff','Verification Status'],revenue:['Business','Revenue & Transactions'],settings:['Business','Settings']};
+function go(page){
+  closeAll();
+  document.getElementById('content').innerHTML=(PAGES[page]||PAGES.dashboard)();
+  const t=TITLES[page]||['',''];
+  document.getElementById('crumb').textContent=t[0];
+  document.getElementById('ptitle').textContent=t[1];
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===page));
+  window.scrollTo(0,0);
+}
+document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)go(a.dataset.page)});
+
+/* ---------- Auth flow ---------- */
+function buildOtp(){
+  const row=document.getElementById('otpRow');
+  row.innerHTML=[0,1,2,3,4,5].map(i=>`<input maxlength="1" inputmode="numeric" data-i="${i}">`).join('');
+  const ins=[...row.querySelectorAll('input')];
+  ins.forEach((inp,i)=>{
+    inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'').slice(0,1);if(inp.value&&i<5)ins[i+1].focus()});
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)ins[i-1].focus()});
+  });
+}
+function authStep(step){
+  document.getElementById('authLogin').style.display=step==='login'?'block':'none';
+  document.getElementById('authOtp').style.display=step==='otp'?'block':'none';
+}
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  if(!email){toast('Enter agency email');return;}
+  document.getElementById('otpDest').textContent='+91 98200 •••00 · '+email;
+  authStep('otp');
+  buildOtp();
+  startOtpTimer();
+  setTimeout(()=>document.querySelector('#otpRow input')?.focus(),100);
+}
+function doVerify(){
+  const code=[...document.querySelectorAll('#otpRow input')].map(i=>i.value).join('');
+  if(code.length<6){toast('Enter all 6 digits');return;}
+  document.getElementById('auth').classList.add('hide');
+  document.getElementById('appShell').style.display='flex';
+  go('dashboard');
+  setTimeout(()=>toast('Signed in · Welcome back'),300);
+}
+let otpInt;
+function startOtpTimer(){
+  let t=30;const el=document.getElementById('otpTimer');
+  clearInterval(otpInt);
+  el.textContent=`(${t}s)`;
+  otpInt=setInterval(()=>{t--;el.textContent=t>0?`(${t}s)`:'';if(t<=0)clearInterval(otpInt);},1000);
+}
+function resendOtp(){toast('New OTP sent');startOtpTimer();}
+/* ---------- Forgot Password flow ---------- */
+let fpStep=1;
+function forgotPass(){fpStep=1;document.getElementById('authMain').style.display='none';document.getElementById('authForgot').style.display='block';fpRender();document.getElementById('auth').scrollTop=0;}
+function fpBackLogin(){document.getElementById('authForgot').style.display='none';document.getElementById('authMain').style.display='block';authStep('login');}
+function fpGo(n){fpStep=n;fpRender();}
+function fpRender(){document.getElementById('fpBody').innerHTML=fpBody();}
+function fpBody(){
+  if(fpStep===1)return `
+    <div class="ac-head"><h2>Reset Password</h2><p>Enter your agency email and we'll send reset instructions.</p></div>
+    <div class="field" style="margin-bottom:18px"><label>Agency Email</label><input type="email" value="admin@rapidaid.in" placeholder="admin@agency.in"></div>
+    <button class="btn btn-primary btn-block" onclick="fpGo(2)">Send Reset Link</button>
+    <div class="auth-foot" style="border:none;padding-top:16px;margin-top:14px"><button class="reg" style="font-size:13.5px" onclick="fpBackLogin()">← Back to Login</button></div>`;
+  if(fpStep===2)return `
+    <div style="text-align:center">
+      <div class="circle" style="width:64px;height:64px;margin:4px auto 16px">${ic('check')}</div>
+      <h2 style="font-size:21px;color:var(--navy);font-weight:800;margin-bottom:8px">Check your email</h2>
+      <p style="color:var(--gray-500);font-size:13.5px;margin-bottom:22px">We've sent password reset instructions to your registered email address.</p>
+      <button class="btn btn-primary btn-block" onclick="fpBackLogin()">Back to Login</button>
+      <div style="margin-top:14px;font-size:12px;color:var(--gray-400)">Didn't get it? <button class="reg" style="font-size:12px" onclick="fpGo(1)">Resend</button> · <button class="reg" style="font-size:12px" onclick="fpGo(3)">Open reset link (demo) →</button></div>
+    </div>`;
+  if(fpStep===3)return `
+    <div class="ac-head"><h2>Reset Password</h2><p>Choose a new password for your account.</p></div>
+    <div class="field"><label>New Password</label>
+      <div class="pw-wrap"><input id="fpPw" type="password" oninput="fpStrength()" placeholder="••••••••"><button type="button" class="pw-eye" onclick="togglePw('fpPw',this)">${ic('eye')}</button></div>
+      <div class="pw-strength"><div class="pw-bars"><i></i><i></i><i></i></div><span class="pw-lbl" id="fpLbl" style="color:var(--gray-400)">Enter password</span></div>
+    </div>
+    <div class="field" style="margin:14px 0 18px"><label>Confirm Password</label>
+      <div class="pw-wrap"><input id="fpPw2" type="password" placeholder="••••••••"><button type="button" class="pw-eye" onclick="togglePw('fpPw2',this)">${ic('eye')}</button></div></div>
+    <button class="btn btn-primary btn-block" onclick="fpReset()">Reset Password</button>
+    <div class="auth-foot" style="border:none;padding-top:16px;margin-top:14px"><button class="reg" style="font-size:13.5px" onclick="fpBackLogin()">← Back to Login</button></div>`;
+  // step 4 — success
+  return `<div style="text-align:center">
+    <div class="circle" style="width:72px;height:72px;margin:4px auto 18px">${ic('check')}</div>
+    <h2 style="font-size:22px;color:var(--navy);font-weight:800;margin-bottom:8px">Password updated successfully</h2>
+    <p style="color:var(--gray-500);font-size:13.5px;margin-bottom:24px">Your password has been reset. You can now sign in with your new credentials.</p>
+    <button class="btn btn-primary btn-block" onclick="fpBackLogin()">Back to Login</button></div>`;
+}
+function fpReset(){const a=document.getElementById('fpPw').value,b=document.getElementById('fpPw2').value;
+  if(!a){toast('Enter a new password');return;}
+  if(a!==b){toast('Passwords do not match');return;}
+  fpGo(4);toast('Password updated');}
+function fpStrength(){const v=(document.getElementById('fpPw')||{}).value||'';const bars=document.querySelectorAll('#fpBody .pw-bars i');const lbl=document.getElementById('fpLbl');
+  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v)&&/[^A-Za-z0-9]/.test(v))s++;
+  const map={1:['Weak','var(--red)'],2:['Medium','var(--amber)'],3:['Strong','var(--green)']};
+  const col=v?(map[s]?map[s][1]:'var(--red)'):'var(--gray-400)';
+  [...bars].forEach((b,i)=>b.style.background=(v&&i<s)?col:'var(--gray-200)');
+  lbl.style.color=col;
+  if(!v)lbl.textContent='Enter password';else if(s>=3)lbl.innerHTML='<span class="pwok">✓ Strong · meets requirements</span>';else lbl.textContent=(map[s]?map[s][0]:'Weak');
+}
+function goRegister(){ startRegistration(); }
+function logout(){
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('auth').classList.remove('hide');
+  authStep('login');
+}
+
+/* Fill static icon placeholders */
+document.querySelectorAll('[data-ic]').forEach(el=>{el.innerHTML=ic(el.dataset.ic);el.style.display='inline-flex'});
+go('dashboard');
+</script>
+</body>
+</html>
