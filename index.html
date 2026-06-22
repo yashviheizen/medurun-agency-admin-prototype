@@ -125,7 +125,9 @@ tbody tr:last-child td{border-bottom:none}
 .t-strong{font-weight:600;color:var(--navy)}
 .t-sub{color:var(--gray-400);font-size:12px}
 .cell-user{display:flex;align-items:center;gap:9px}
-.cell-user .av{width:30px;height:30px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+.cell-user .av{width:32px;height:32px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+.cell-user .av svg{width:16px;height:16px}
+.cell-user .av.av-ic{background:var(--gray-100)}
 
 /* Badge */
 .badge2{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
@@ -552,7 +554,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="nav-label">Fleet & Staff</div>
       <a data-page="ambulances"><i data-ic="truck"></i><span class="txt">Ambulances</span></a>
       <a data-page="drivers"><i data-ic="users"></i><span class="txt">Drivers</span></a>
-      <a data-page="verification"><i data-ic="shield"></i><span class="txt">Verification</span><span class="badge">7</span></a>
+      <a data-page="verification"><i data-ic="shield"></i><span class="txt">Verification Status</span></a>
       <div class="nav-label">Business</div>
       <a data-page="revenue"><i data-ic="chart"></i><span class="txt">Revenue</span></a>
       <a data-page="settings"><i data-ic="settings"></i><span class="txt">Settings</span></a>
@@ -875,7 +877,7 @@ function vqCount(status){return vqAll().filter(v=>v[3]===status).length;}
 function verRows(kind){const arr=kind==='drv'?VERIFY_DRIVERS:VERIFY_AMB;
   if(!arr.length)return `<tr><td colspan="4"><div class="empty"><div style="font-size:30px;margin-bottom:6px">✅</div><b style="color:var(--navy);display:block;font-size:15px">No submissions yet</b><span>Submitted drivers and ambulances will appear here.</span></div></td></tr>`;
   return arr.map(v=>`<tr style="cursor:pointer" onclick="verifyDrawer('${v[0]}','${kind}')">
-    <td><div class="cell-user">${kind==='drv'?av(v[0]):'<div class="av" style="background:var(--navy-50);color:var(--navy)">'+ic('truck')+'</div>'}<span class="t-strong">${v[0]}</span></div></td>
+    <td><div class="cell-user">${kind==='drv'?av(v[0]):'<div class="av av-ic">'+ic('truck')+'</div>'}<span class="t-strong">${v[0]}</span></div></td>
     <td class="t-sub">${v[2]}</td>
     <td>${badge(v[3])}</td>
     <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();verifyDrawer('${v[0]}','${kind}')">${ic('eye')}View Submission</button></td></tr>`).join('');
