@@ -146,6 +146,54 @@ tbody tr:last-child td{border-bottom:none}
 .iconbtn{width:30px;height:30px;border:1px solid var(--gray-200);border-radius:7px;background:#fff;color:var(--gray-500);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.12s}
 .iconbtn:hover{background:var(--gray-50);color:var(--navy);border-color:var(--gray-300)}
 .iconbtn svg{width:15px;height:15px}
+.row-menu{position:fixed;display:none;background:#fff;border:1px solid var(--gray-200);border-radius:9px;box-shadow:var(--shadow-lg);min-width:184px;padding:5px;z-index:90}
+.row-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;font-size:13px;color:var(--gray-700);cursor:pointer;font-family:inherit;font-weight:500}
+.row-menu button:hover{background:var(--gray-50);color:var(--navy)}
+.row-menu button svg{width:15px;height:15px;color:var(--gray-400)}
+.row-menu button:hover svg{color:var(--navy)}
+.row-menu button.danger{color:var(--red)}
+.row-menu button.danger svg{color:var(--red)}
+.row-menu button.danger:hover{background:var(--red-50)}
+.row-menu .sep{height:1px;background:var(--gray-100);margin:4px 2px}
+.asg-help{font-size:10.5px;color:var(--gray-400);margin-top:3px}
+/* Assignment screen — denser layout */
+.asg-kpi .kpi{padding:10px 13px}
+.asg-kpi .kpi .ico{width:26px!important;height:26px!important;margin-bottom:5px!important}
+.asg-kpi .kpi .ico svg{width:15px;height:15px}
+.asg-kpi .kpi .label{font-size:11.5px}
+.asg-kpi .kpi .val{font-size:18px!important;margin:0!important}
+.asg-dense td{padding:9px 14px}
+.asg-dense th{padding:9px 14px}
+.asg-dense .av.av-ic{width:28px;height:28px}
+.asg-dense .av.av-ic svg{width:14px;height:14px}
+.asg-dense .badge2{font-size:10.5px;padding:2px 8px}
+.asg-dense .btn-sm{padding:5px 10px;font-size:12px}
+.asg-dense .iconbtn{width:28px;height:28px}
+.asg-dense td:last-child,.asg-dense th:last-child{width:1%;white-space:nowrap}
+/* Live ride tracking map */
+.track-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-47%) scale(.98);width:min(980px,95vw);height:min(620px,90vh);background:#fff;border-radius:14px;z-index:60;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transition:.22s;display:flex;flex-direction:column;overflow:hidden}
+.track-modal.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.tm-head{padding:13px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tm-head h3{font-size:16px;color:var(--navy);font-weight:700}
+.tm-head .x{cursor:pointer;color:var(--gray-400);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px}
+.tm-head .x:hover{background:var(--gray-100)}
+.tm-body{flex:1;display:flex;min-height:0}
+.tm-map{flex:1;position:relative;background:#e8eef5;min-width:0}
+.tm-map svg{width:100%;height:100%;display:block}
+.tm-eta{position:absolute;top:12px;left:12px;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:8px 12px;box-shadow:var(--shadow);font-size:12px}
+.tm-eta b{font-size:17px;color:var(--navy);display:block}
+.tm-amb-pulse{animation:tmp 1.6s infinite}
+@keyframes tmp{0%{r:8;opacity:.5}70%{r:20;opacity:0}100%{opacity:0}}
+.tm-side{width:308px;flex-shrink:0;border-left:1px solid var(--gray-200);padding:16px;overflow-y:auto;background:var(--gray-50)}
+.tm-side .dsec{margin-bottom:12px}
+.tm-leg{display:flex;gap:10px}
+.tm-leg .line{display:flex;flex-direction:column;align-items:center;padding-top:3px}
+.tm-leg .o{width:10px;height:10px;border-radius:50%;border:2px solid var(--navy)}
+.tm-leg .l{flex:1;width:2px;background:var(--gray-300);margin:2px 0;min-height:26px}
+.tm-leg .d{width:10px;height:10px;border-radius:50%;background:var(--red)}
+.tm-leg b{font-size:12.5px;color:var(--navy);display:block}
+.tm-leg span{font-size:11px;color:var(--gray-400);display:block;margin-bottom:14px}
+@media(max-width:720px){.tm-body{flex-direction:column}.tm-side{width:auto;border-left:none;border-top:1px solid var(--gray-200)}}
 /* Fleet quick view strip */
 .qv-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px}
 .qv-item{flex:0 0 auto;min-width:214px;border:1px solid var(--gray-200);border-radius:9px;background:#fff;padding:11px 13px;display:flex;flex-direction:column;gap:7px}
@@ -291,11 +339,11 @@ tbody tr:last-child td{border-bottom:none}
 
 /* Live cards */
 .live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:22px}
-.lcard{background:#fff;border:1px solid var(--gray-200);border-left:4px solid var(--green);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow)}
+.lcard{background:#fff;border:1px solid var(--gray-200);border-left:4px solid var(--green);border-radius:var(--radius);padding:11px 13px;box-shadow:none}
 .lcard.enroute{border-left-color:var(--amber)}
 .lcard.dispatch{border-left-color:var(--navy)}
-.lcard .lh{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
-.lcard .lh b{color:var(--navy);font-size:14px}
+.lcard .lh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.lcard .lh b{color:var(--navy);font-size:13.5px}
 .pulse{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--green)}
 .pulse .pd{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pl 1.4s infinite}
 @keyframes pl{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 7px rgba(22,163,74,0)}}
@@ -306,6 +354,10 @@ tbody tr:last-child td{border-bottom:none}
 .route .line .d{width:9px;height:9px;border-radius:50%;background:var(--red)}
 .route .pts b{font-size:12.5px;color:var(--navy);display:block}
 .route .pts span{font-size:11px;color:var(--gray-400);display:block;margin-bottom:9px}
+.lcard .route{margin:7px 0}
+.lcard .route .pts b{font-size:12px}
+.lcard .route .pts span{margin-bottom:4px}
+.lcard .cell-user .av{width:28px;height:28px}
 
 /* Bar chart */
 .chart{display:flex;align-items:flex-end;gap:14px;height:200px;padding:14px 6px 0}
@@ -587,6 +639,8 @@ tbody tr:last-child td{border-bottom:none}
 <div class="drawer" id="drawer"></div>
 <div class="modal" id="modal"></div>
 <div class="toast" id="toast"><i data-ic="check"></i><span id="toastMsg">Saved</span></div>
+<div class="row-menu" id="rowMenu"></div>
+<div class="track-modal" id="trackModal"></div>
 
 <script>
 /* ---------- Icons ---------- */
@@ -611,6 +665,7 @@ function ic(n){
     eyeoff:'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
     refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
     alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    dots:'<circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/>',
     edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/>',
     doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>',
     upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
@@ -696,7 +751,7 @@ function toast(msg){const t=document.getElementById('toast');document.getElement
 /* ---------- Drawer / Modal ---------- */
 function openDrawer(html){document.getElementById('drawer').innerHTML=html;document.getElementById('drawer').classList.add('show');document.getElementById('overlay').classList.add('show')}
 function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('modal').classList.add('show');document.getElementById('overlay').classList.add('show')}
-function closeAll(){document.getElementById('drawer').classList.remove('show');document.getElementById('modal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
+function closeAll(){document.getElementById('drawer').classList.remove('show');document.getElementById('modal').classList.remove('show');document.getElementById('trackModal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show');if(!document.getElementById('drawer').classList.contains('show'))document.getElementById('overlay').classList.remove('show')}
 
 /* ---------- Pages ---------- */
@@ -735,57 +790,228 @@ function kpi(icon,cls,label,val,delta,dir){
   ${delta?`<span class="delta ${dir}">${dir==='up'?'▲':'▼'} ${delta} vs yesterday</span>`:'<span class="t-sub">Live now</span>'}</div>`;
 }
 
-PAGES.live=()=>`
-  <div class="page-head"><div><h2>Live Rides</h2><p>Real-time view of all active dispatches</p></div>
-  <span class="pulse"><span class="pd"></span>4 rides active</span></div>
-  <div class="live-grid">
-    ${liveCard('MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','Andheri Station','Lilavati Hospital','En Route','6 min','enroute')}
-    ${liveCard('MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','Kandivali','Surya Childrens','En Route','11 min','enroute')}
-    ${liveCard('MED-2404','Farhan Khan','Rajesh Kumar','MH18IJ7890','Sion','KEM Hospital','Dispatched','2 min','dispatch')}
-    ${liveCard('MED-2408','Geeta Bhosale','Suresh Yadav','MH14CD5678','Bandra West','Holy Family','On Scene','—','')}
-  </div>
-  <div class="card"><div class="card-head"><h3>Active Rides Table</h3></div>
-  <div class="card-body flush"><div class="tbl-wrap"><table>
-    <thead><tr><th>Ride ID</th><th>Patient</th><th>Driver</th><th>Ambulance</th><th>Pickup</th><th>Drop</th><th>Status</th><th>ETA</th></tr></thead>
-    <tbody>
-    ${[['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','Andheri','Lilavati','En Route','6 min'],
-      ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','Kandivali','Surya Childrens','En Route','11 min'],
-      ['MED-2404','Farhan Khan','Rajesh Kumar','MH18IJ7890','Sion','KEM Hospital','Dispatched','2 min'],
-      ['MED-2408','Geeta Bhosale','Suresh Yadav','MH14CD5678','Bandra','Holy Family','On Scene','—']]
-      .map(r=>`<tr><td class="t-strong">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${badge(r[6])}</td><td class="t-strong">${r[7]}</td></tr>`).join('')}
-    </tbody></table></div></div></div>`;
-
-function liveCard(id,pt,drv,amb,from,to,st,eta,cls){
-  return `<div class="lcard ${cls}">
-    <div class="lh"><b>${id}</b>${badge(st)}</div>
-    <div class="cell-user">${av(pt)}<div><b style="color:var(--navy);font-size:13px">${pt}</b><div class="t-sub">${drv} · ${amb}</div></div></div>
+// [id, patient, driver, ambulance, pickup, drop, status, eta, cls]
+const LIVE_RIDES=[
+  ['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','Andheri Station','Lilavati Hospital','En Route','6 min','enroute'],
+  ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','Kandivali','Surya Childrens','En Route','11 min','enroute'],
+  ['MED-2404','Farhan Khan','Rajesh Kumar','MH18IJ7890','Sion','KEM Hospital','Dispatched','2 min','dispatch'],
+  ['MED-2408','Geeta Bhosale','Suresh Yadav','MH14CD5678','Bandra West','Holy Family','On Scene','—',''],
+  ['MED-2402','Vikram Patel','Suresh Yadav','MH14CD5678','Powai','Hiranandani','Completed','—',''],
+  ['MED-2405','Sunita Rao','Amit Verma','MH16GH3456','Dadar','KEM Hospital','Completed','—',''],
+];
+const LIVE_ACTIVE=['En Route','Dispatched','On Scene'];
+let liveTab='All Active';
+function liveFilter(){return LIVE_RIDES.filter(r=>{
+  if(liveTab==='All Active')return LIVE_ACTIVE.includes(r[6]);
+  if(liveTab==='Completed Today')return r[6]==='Completed';
+  return r[6]===liveTab;});}
+function liveAvgEta(){const m=LIVE_RIDES.filter(r=>LIVE_ACTIVE.includes(r[6])).map(r=>parseInt(r[7])).filter(n=>!isNaN(n));
+  return m.length?Math.round(m.reduce((a,b)=>a+b,0)/m.length)+' min':'—';}
+function liveCard(r){
+  return `<div class="lcard ${r[8]}">
+    <div class="lh"><b>${r[0]}</b>${badge(r[6])}</div>
+    <div class="cell-user">${av(r[1])}<div><b style="color:var(--navy);font-size:13px">${r[1]}</b><div class="t-sub">${r[2]} · ${r[3]}</div></div></div>
     <div class="route"><div class="line"><div class="o"></div><div class="l"></div><div class="d"></div></div>
-      <div class="pts"><b>${from}</b><span>Pickup</span><b>${to}</b><span>Drop-off</span></div></div>
+      <div class="pts"><b>${r[4]}</b><span>Pickup</span><b>${r[5]}</b><span>Drop-off</span></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--gray-100)">
-      <span class="t-sub">ETA <b style="color:var(--navy)">${eta}</b></span>
-      <button class="btn btn-ghost btn-sm" onclick="toast('Opening live track…')">${ic('pin')}Track</button></div></div>`;
+      <span class="t-sub">ETA <b style="color:var(--navy)">${r[7]}</b></span>
+      <button class="btn btn-ghost btn-sm" onclick="rideTrackDrawer('${r[0]}')">${ic('pin')}Track</button></div></div>`;
 }
-
-PAGES.assignment=()=>`
-  <div class="page-head"><div><h2>Assignment Map</h2><p>Driver-to-ambulance assignments and live status</p></div></div>
-  <div class="chip-row" style="margin-bottom:18px" id="asgChips">
-    ${['All','Assigned','Unassigned','In Service','Available'].map((c,i)=>`<div class="chip ${i==0?'active':''}" onclick="chipPick(this,'asgChips')">${c}</div>`).join('')}
+function liveRows(list){
+  if(!list.length)return `<tr><td colspan="9"><div class="empty">No rides in this view.</div></td></tr>`;
+  return list.map(r=>`<tr style="cursor:pointer" onclick="rideTrackDrawer('${r[0]}')">
+    <td class="t-strong">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${badge(r[6])}</td><td class="t-strong">${r[7]}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();rideTrackDrawer('${r[0]}')">${ic('pin')}Track</button></td></tr>`).join('');
+}
+function renderLive(){const list=liveFilter();
+  const g=document.getElementById('liveGrid');if(g)g.innerHTML=list.map(r=>liveCard(r)).join('')||'<div class="empty" style="grid-column:1/-1">No rides in this view.</div>';
+  const b=document.getElementById('liveBody');if(b)b.innerHTML=liveRows(list);}
+function liveSetTab(el,t){liveTab=t;document.querySelectorAll('#liveTabs .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderLive();}
+PAGES.live=()=>{liveTab='All Active';const active=LIVE_RIDES.filter(r=>LIVE_ACTIVE.includes(r[6]));return `
+  <div class="page-head"><div><h2>Live Rides</h2><p>Real-time view of all active dispatches</p></div>
+  <span class="pulse"><span class="pd"></span>${active.length} rides active</span></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    ${kpiMini('Active Rides',active.length,'ico-navy','activity')}${kpiMini('En Route',LIVE_RIDES.filter(r=>r[6]==='En Route').length,'ico-amber','map')}${kpiMini('On Scene',LIVE_RIDES.filter(r=>r[6]==='On Scene').length,'ico-navy','pin')}${kpiMini('Average ETA',liveAvgEta(),'ico-green','clock')}
   </div>
-  <div class="map-grid">
-    ${slot('MH12AB1234','ALS','Rajesh Kumar','In Service',false)}
-    ${slot('MH14CD5678','BLS','Suresh Yadav','On Scene',false)}
-    ${slot('MH12EF9012','Neo','Deepak Singh','In Service',false)}
-    ${slot('MH16GH3456','BLS','Amit Verma','Available',false)}
-    ${slot('MH18IJ7890','ALS','— No driver','Unassigned',true)}
-    ${slot('MH20KL2345','BLS','— No driver','Unassigned',true)}
-  </div>`;
-
-function slot(reg,cat,drv,st,un){
-  return `<div class="slot ${un?'unassigned':''}">
-    <div style="display:flex;justify-content:space-between;align-items:start"><div class="sicon">${ic('truck')}</div>${badge(st)}</div>
-    <div class="sreg">${reg}</div><div class="sdrv">${cat} · ${drv}</div>
-    <button class="btn ${un?'btn-primary':'btn-ghost'} btn-sm" style="width:100%" onclick="reassignModal('${reg}')">${un?'Assign Driver':'Reassign'}</button></div>`;
+  <div class="tabs" id="liveTabs">
+    ${['All Active','En Route','Dispatched','On Scene','Completed Today'].map((t,i)=>`<div class="tab ${i==0?'active':''}" onclick="liveSetTab(this,'${t}')">${t}</div>`).join('')}
+  </div>
+  <div class="card"><div class="card-head"><h3>Active Rides</h3></div>
+  <div class="card-body flush"><div class="tbl-wrap"><table>
+    <thead><tr><th>Ride ID</th><th>Patient</th><th>Driver</th><th>Ambulance</th><th>Pickup</th><th>Drop</th><th>Status</th><th>ETA</th><th>Actions</th></tr></thead>
+    <tbody id="liveBody">${liveRows(liveFilter())}</tbody></table></div></div></div>`;};
+function rideTrackDrawer(id){
+  const r=LIVE_RIDES.find(x=>x[0]===id)||LIVE_RIDES[0];
+  const stages=['Dispatched','En Route','On Scene','Completed'];
+  const cur=stages.indexOf(r[6]===''?'On Scene':r[6]);
+  const tl=`<div class="vq-tl">${[
+    ['Dispatched',r[6]==='Dispatched'&&cur===0?'08:02 AM · now':'08:02 AM'],
+    ['En Route','08:06 AM'],['On Scene','08:14 AM'],['Completed','—']
+  ].map((e,i)=>{const cls=i<cur?'':i===cur?'amber':'';const dim=i>cur?'style="opacity:.45"':'';
+    return `<div class="ev ${cls}" ${dim}><b>${e[0]}</b><span>${i<=cur?e[1]:'Pending'}</span></div>`;}).join('')}</div>`;
+  openDrawer(`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic">${ic('activity')}</div>
+      <div style="min-width:0"><h3>${r[0]}</h3><div style="display:flex;gap:6px;align-items:center;margin-top:4px">${badge(r[6])}<span class="t-sub">ETA ${r[7]}</span></div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>
+  <div class="drawer-body">
+    <div class="dsec"><h4>Ride Details</h4>
+      <dl class="dl"><dt>Patient</dt><dd>${r[1]}</dd><dt>Driver</dt><dd>${r[2]}</dd><dt>Ambulance</dt><dd>${r[3]}</dd><dt>Current Status</dt><dd>${badge(r[6])}</dd><dt>ETA</dt><dd>${r[7]}</dd></dl></div>
+    <div class="dsec"><h4>Route</h4>
+      <div class="route" style="margin:0"><div class="line"><div class="o"></div><div class="l" style="min-height:34px"></div><div class="d"></div></div>
+        <div class="pts"><b>${r[4]}</b><span>Pickup Location</span><b>${r[5]}</b><span>Drop Location</span></div></div></div>
+    <div class="dsec"><h4>Status Timeline</h4>${tl}</div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="closeAll()">Close</button><button class="btn btn-primary" onclick="openRideMap('${r[0]}')">${ic('map')}View on Map</button></div>`);
 }
+function rideTrackByAmb(reg){const r=LIVE_RIDES.find(x=>x[3]===reg&&LIVE_ACTIVE.includes(x[6]));
+  if(r)rideTrackDrawer(r[0]);else toast('No active ride for '+reg);}
+function openRideMap(id){
+  const r=LIVE_RIDES.find(x=>x[0]===id)||LIVE_RIDES[0];
+  // progress of ambulance along route by status
+  const prog={'Dispatched':.18,'En Route':.55,'On Scene':.82,'Completed':1}[r[6]]||.5;
+  const map=`<svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="600" height="400" fill="#e8eef5"/>
+    <g stroke="#d3dce8" stroke-width="10" fill="none" stroke-linecap="round">
+      <path d="M-20 110 H620"/><path d="M-20 250 H620"/><path d="M140 -20 V420"/><path d="M430 -20 V420"/></g>
+    <g stroke="#dde4ee" stroke-width="4" fill="none">
+      <path d="M-20 180 H620"/><path d="M-20 320 H620"/><path d="M280 -20 V420"/></g>
+    <g fill="#cfdae8"><rect x="170" y="135" width="80" height="55" rx="3"/><rect x="320" y="135" width="70" height="55" rx="3"/><rect x="170" y="275" width="80" height="60" rx="3"/><rect x="455" y="275" width="90" height="60" rx="3"/></g>
+    <path id="tmRoute" d="M80 330 C 200 300, 240 200, 330 200 S 470 130, 525 75" fill="none" stroke="#0F2B5B" stroke-width="5" stroke-linecap="round"/>
+    <path d="M80 330 C 200 300, 240 200, 330 200 S 470 130, 525 75" fill="none" stroke="#16a34a" stroke-width="5" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="${1-prog}"/>
+    <g><circle cx="80" cy="330" r="11" fill="#fff" stroke="#0F2B5B" stroke-width="3"/><circle cx="80" cy="330" r="4" fill="#0F2B5B"/></g>
+    <g><path d="M525 56 c-11 0 -20 9 -20 20 c0 15 20 33 20 33 c0 0 20 -18 20 -33 c0 -11 -9 -20 -20 -20 z" fill="#e11d2a"/><circle cx="525" cy="76" r="7" fill="#fff"/></g>
+    <g id="tmAmb" transform="translate(${(80+(525-80)*prog).toFixed(0)},${(330+(75-330)*prog).toFixed(0)})">
+      <circle class="tm-amb-pulse" r="10" fill="#0F2B5B"/>
+      <circle r="15" fill="#0F2B5B" stroke="#fff" stroke-width="3"/>
+      <g transform="translate(-8,-8) scale(0.67)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h13v11H1z"/><path d="M14 8h4l3 3v3h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></g>
+    </g>
+  </svg>`;
+  document.getElementById('trackModal').innerHTML=`
+    <div class="tm-head"><div style="display:flex;align-items:center;gap:10px;min-width:0">
+      <h3>Live Tracking · ${r[0]}</h3>${badge(r[6])}<span class="pulse"><span class="pd"></span>Live</span></div>
+      <div class="x" onclick="closeAll()">${ic('x')}</div></div>
+    <div class="tm-body">
+      <div class="tm-map">${map}<div class="tm-eta">ETA to hospital<b>${r[7]}</b></div></div>
+      <div class="tm-side">
+        <div class="dsec"><h4>Ride Status</h4>
+          <dl class="dl"><dt>Status</dt><dd>${badge(r[6])}</dd><dt>ETA</dt><dd>${r[7]}</dd><dt>Distance left</dt><dd>${(4.2*(1-prog)).toFixed(1)} km</dd></dl></div>
+        <div class="dsec"><h4>Journey</h4>
+          <div class="tm-leg"><div class="line"><div class="o"></div><div class="l"></div><div class="d"></div></div>
+            <div><b>${r[4]}</b><span>Pickup location</span><b>${r[5]}</b><span>Destination hospital</span></div></div></div>
+        <div class="dsec"><h4>Driver & Vehicle</h4>
+          <div class="cell-user" style="margin-bottom:10px">${av(r[2])}<div><b style="color:var(--navy)">${r[2]}</b><div class="t-sub">Driver on duty</div></div></div>
+          <dl class="dl"><dt>Ambulance</dt><dd>${r[3]}</dd><dt>Patient</dt><dd>${r[1]}</dd></dl></div>
+      </div>
+    </div>`;
+  document.getElementById('trackModal').classList.add('show');
+  document.getElementById('overlay').classList.add('show');
+}
+
+let asgTab='All';
+function asgIsAssigned(a){return !a[3].includes('Unassigned');}
+function drvStatusOf(name){const d=DRIVERS.find(x=>x[0]===name);return d?d[5]:'—';}
+function asgAvailDrivers(){return DRIVERS.filter(d=>d[2].includes('Unassigned'));}
+function asgFilter(){return AMBULANCES.filter(a=>asgTab==='All'?true:asgTab==='Assigned'?asgIsAssigned(a):!asgIsAssigned(a));}
+function asgCanAssign(a){return a[6]!=='Maintenance';}
+function asgRows(){const list=asgFilter();
+  if(!list.length)return `<tr><td colspan="6"><div class="empty">No ambulances in this view.</div></td></tr>`;
+  return list.map(a=>{const assigned=asgIsAssigned(a);
+    let action;
+    if(assigned){
+      action=`<button class="btn btn-ghost btn-sm" onclick="assignDrawer('${a[0]}')">${ic('refresh')}Reassign</button>
+        <button class="iconbtn" title="More" onclick="asgRowMenu(this,'${a[0]}','${a[3]}')">${ic('dots')}</button>`;
+    }else if(!asgCanAssign(a)){
+      action=`<button class="btn btn-ghost btn-sm" disabled>Assignment Unavailable</button>`;
+    }else{
+      action=`<button class="btn btn-primary btn-sm" onclick="assignDrawer('${a[0]}')">${ic('plus')}Assign Driver</button>`;
+    }
+    return `<tr>
+      <td><div class="cell-user"><div class="av av-ic">${ic('truck')}</div><span class="t-strong">${a[0]}</span></div></td>
+      <td><span class="badge2 b-navy">${a[2]}</span></td>
+      <td>${assigned?a[3]:'<span class="t-sub">— Unassigned</span>'}</td>
+      <td>${assigned?badge(drvStatusOf(a[3])):'<span class="t-sub">—</span>'}</td>
+      <td>${badge(a[6])}</td>
+      <td><div class="row-actions">${action}</div>${(!assigned&&!asgCanAssign(a))?'<div class="asg-help">Ambulance must be Active before a driver can be assigned.</div>':''}</td></tr>`;}).join('');
+}
+/* Row overflow menu (fixed-positioned to escape table clipping) */
+function asgRowMenu(btn,reg,driver){
+  const m=document.getElementById('rowMenu');
+  if(m.dataset.reg===reg&&m.style.display==='block'){closeRowMenu();return;}
+  m.dataset.reg=reg;
+  m.innerHTML=`<button onclick="closeRowMenu();driverDrawer('${driver}','view')">${ic('eye')}View Driver</button>
+    <button onclick="closeRowMenu();ambDrawer('${reg}','view')">${ic('truck')}View Ambulance</button>
+    <div class="sep"></div>
+    <button class="danger" onclick="closeRowMenu();asgRemove('${reg}')">${ic('x')}Remove Assignment</button>`;
+  m.style.display='block';
+  const rect=btn.getBoundingClientRect(),mw=m.getBoundingClientRect().width;
+  m.style.top=(rect.bottom+5)+'px';
+  m.style.left=Math.max(8,rect.right-mw)+'px';
+}
+function closeRowMenu(){const m=document.getElementById('rowMenu');if(m){m.style.display='none';m.dataset.reg='';}}
+document.addEventListener('mousedown',e=>{const m=document.getElementById('rowMenu');if(m&&m.style.display==='block'&&!m.contains(e.target)&&!e.target.closest('[onclick^="asgRowMenu"]'))closeRowMenu();});
+function updateAsgUI(){
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('asgTotal',AMBULANCES.length);set('asgAssigned',AMBULANCES.filter(asgIsAssigned).length);
+  set('asgUnassigned',AMBULANCES.filter(a=>!asgIsAssigned(a)).length);set('asgAvail',asgAvailDrivers().length);
+  const b=document.getElementById('asgBody');if(b)b.innerHTML=asgRows();
+}
+function asgSetTab(el,t){asgTab=t;document.querySelectorAll('#asgTabs .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.getElementById('asgBody').innerHTML=asgRows();}
+PAGES.assignment=()=>{asgTab='All';return `
+  <div class="page-head"><div><h2>Assignment Map</h2><p>Manage driver-to-ambulance assignments across your fleet.</p></div></div>
+  <div class="kpi-grid asg-kpi" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    ${kpiMiniId('asgTotal','Total Ambulances',AMBULANCES.length,'ico-navy','truck')}${kpiMiniId('asgAssigned','Assigned',AMBULANCES.filter(asgIsAssigned).length,'ico-green','users')}${kpiMiniId('asgUnassigned','Unassigned',AMBULANCES.filter(a=>!asgIsAssigned(a)).length,'ico-amber','clock')}${kpiMiniId('asgAvail','Available Drivers',asgAvailDrivers().length,'ico-navy','users')}
+  </div>
+  <div class="tabs" id="asgTabs">
+    ${['All','Assigned','Unassigned'].map((t,i)=>`<div class="tab ${i==0?'active':''}" onclick="asgSetTab(this,'${t}')">${t}</div>`).join('')}
+  </div>
+  <div class="card asg-dense"><div class="card-body flush"><div class="tbl-wrap"><table>
+    <thead><tr><th>Ambulance</th><th>Category</th><th>Assigned Driver</th><th>Driver Status</th><th>Ambulance Status</th><th>Action</th></tr></thead>
+    <tbody id="asgBody">${asgRows()}</tbody></table></div></div></div>`;};
+function asgRemove(reg){const a=AMBULANCES.find(x=>x[0]===reg);if(!a)return;
+  const d=DRIVERS.find(x=>x[0]===a[3]);if(d)d[2]='— Unassigned';
+  a[3]='— Unassigned';updateAsgUI();toast('Assignment removed');}
+// Assignment history per ambulance (sample): {last, assignedOn, unassignedOn}
+const ASG_HISTORY={
+  'MH12AB1234':{last:'Rajesh Kumar',assignedOn:'02 Jun 2026',unassignedOn:''},
+  'MH14CD5678':{last:'Suresh Yadav',assignedOn:'28 May 2026',unassignedOn:''},
+  'MH12EF9012':{last:'Deepak Singh',assignedOn:'15 May 2026',unassignedOn:''},
+  'MH16GH3456':{last:'Amit Verma',assignedOn:'10 Jun 2026',unassignedOn:''},
+  'MH18IJ7890':{last:'Sandeep More',assignedOn:'01 Apr 2026',unassignedOn:'12 Jun 2026'},
+  'MH20KL2345':{last:'Vijay Patil',assignedOn:'20 Mar 2026',unassignedOn:'05 Jun 2026'},
+};
+function assignDrawer(reg){
+  const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];
+  const assigned=asgIsAssigned(a);
+  const opts=asgAvailDrivers(); // truly available only — matches the summary card
+  const h=ASG_HISTORY[reg]||{last:'—',assignedOn:'—',unassignedOn:''};
+  const driverList=opts.length
+    ? opts.map(d=>`<label class="check" style="margin-bottom:8px"><input type="radio" name="asgPick" value="${d[0]}" onchange="asgPicked()">
+        <span style="display:flex;align-items:center;gap:9px;flex:1">${av(d[0])}<span><b style="color:var(--navy);font-size:13px">${d[0]}</b><span class="t-sub" style="display:block">${d[5]} · Available</span></span></span></label>`).join('')
+    : `<div class="empty" style="padding:24px 10px"><b style="color:var(--navy);display:block;font-size:14px">No available drivers found</b><span>All drivers are currently assigned or unavailable.</span></div>`;
+  openDrawer(`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic">${ic('truck')}</div>
+      <div style="min-width:0"><h3>${assigned?'Reassign Driver':'Assign Driver'}</h3>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:4px"><span class="badge2 b-navy" style="padding:2px 8px;font-size:10px">${a[2]}</span><span class="t-sub">${a[0]}</span></div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>
+  <div class="drawer-body">
+    <div class="dsec"><h4>Ambulance Details</h4>
+      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Category</dt><dd>${a[2]}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Status</dt><dd>${badge(a[6])}</dd></dl></div>
+    <div class="dsec"><h4>Current Driver</h4>
+      ${assigned?`<div class="cell-user">${av(a[3])}<div><b style="color:var(--navy)">${a[3]}</b><div class="t-sub">${drvStatusOf(a[3])}</div></div></div>`:'<span class="t-sub">No driver currently assigned</span>'}</div>
+    <div class="dsec"><h4>Assignment History</h4>
+      <dl class="dl"><dt>Last Assigned Driver</dt><dd>${h.last}</dd><dt>Assignment Date</dt><dd>${h.assignedOn}</dd><dt>Unassigned Date</dt><dd>${h.unassignedOn||'<span class="t-sub">Currently assigned</span>'}</dd></dl></div>
+    <div class="dsec"><h4>Available Drivers</h4>${driverList}</div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="closeAll()">Cancel</button><button class="btn btn-primary" id="asgSaveBtn" onclick="asgSave('${a[0]}')" disabled>${ic('check')}Save Assignment</button></div>`);
+}
+function asgPicked(){const b=document.getElementById('asgSaveBtn');if(b)b.disabled=!document.querySelector('input[name=asgPick]:checked');}
+function asgSave(reg){const sel=document.querySelector('input[name=asgPick]:checked');
+  if(!sel){toast('Select a driver');return;}
+  const a=AMBULANCES.find(x=>x[0]===reg),name=sel.value;
+  const prev=DRIVERS.find(x=>x[0]===a[3]);if(prev&&prev[0]!==name){prev[2]='— Unassigned';}
+  if(prev&&prev[0]!==name&&ASG_HISTORY[reg]){ASG_HISTORY[reg]={last:prev[0],assignedOn:ASG_HISTORY[reg].assignedOn,unassignedOn:'Today'};}
+  const nd=DRIVERS.find(x=>x[0]===name);if(nd)nd[2]=reg;
+  a[3]=name;updateAsgUI();closeAll();toast('✓ Driver assigned to '+reg);}
 
 PAGES.history=()=>`
   <div class="page-head"><div><h2>Ride History</h2><p>Complete log of past and ongoing rides</p></div>
