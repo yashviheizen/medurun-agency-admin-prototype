@@ -479,6 +479,18 @@ tbody tr:last-child td{border-bottom:none}
 .doc-up{display:flex;gap:12px;align-items:flex-start;border:1.5px dashed var(--gray-300);border-radius:11px;padding:13px 14px;background:var(--gray-50);cursor:pointer;transition:.12s}
 .doc-up:hover{border-color:var(--navy);background:var(--navy-50)}
 .doc-up.done{border-style:solid;border-color:var(--green);background:var(--green-50);cursor:default}
+.doc-up.err{border-style:solid;border-color:#f3c0c0;background:var(--red-50)}
+/* Review checklist */
+.ck-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100)}
+.ck-row:last-child{border-bottom:none}
+.ck-n{font-size:13px;color:var(--navy)}
+.ck-b{display:flex;gap:6px;flex-shrink:0}
+.ck-summary{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;padding:9px 12px;border-radius:8px;margin-bottom:10px}
+.ck-summary svg{width:15px;height:15px;flex-shrink:0}
+.ck-summary.ok{background:var(--green-50);color:var(--green)}
+.ck-summary.warn{background:var(--amber-50);color:#8a5a09}
+.ck-subh{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-400);font-weight:700;margin:13px 0 5px}
+.ck-subh:first-child{margin-top:0}
 .du-ic{width:38px;height:38px;border-radius:9px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0}
 .du-ic svg{width:18px;height:18px}
 .doc-up.done .du-ic{background:var(--green);border-color:var(--green);color:#fff}
@@ -681,6 +693,8 @@ tbody tr:last-child td{border-bottom:none}
 <div class="hdr-menu notif" id="notifMenu"></div>
 <div class="hdr-menu profile" id="profileMenu"></div>
 <div class="track-modal" id="trackModal"></div>
+<input type="file" id="aawFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="aawFile(this)">
+<input type="file" id="aavFileInput" style="display:none" onchange="aavFile(this)">
 
 <script>
 /* ---------- Icons ---------- */
@@ -723,22 +737,38 @@ function ic(n){
 }
 
 /* ---------- Sample Data ---------- */
+// ---------- Official Medurun ambulance type master list ----------
+const AMB_TYPES=[
+  {short:'ALS Winger',      full:'ALS (Tata Winger Ambulance)',                        model:'Tata Winger'},
+  {short:'ALS Tempo',       full:'ALS (Force Tempo Traveller Ambulance)',              model:'Force Tempo Traveller'},
+  {short:'ALS Bolero',      full:'ALS (Bolero Ambulance)',                             model:'Mahindra Bolero'},
+  {short:'Neo ALS Winger',  full:'Neonatal ALS (Tata Winger Ambulance)',              model:'Tata Winger'},
+  {short:'Neo Tempo',       full:'Neonatal (Force Tempo Traveller Ambulance)',        model:'Force Tempo Traveller'},
+  {short:'BLS Winger',      full:'BLS (Tata Winger Ambulance)',                        model:'Tata Winger'},
+  {short:'BLS Tempo',       full:'BLS (Force Tempo Traveller Ambulance)',              model:'Force Tempo Traveller'},
+  {short:'BLS Bolero',      full:'BLS (Bolero Ambulance)',                             model:'Mahindra Bolero'},
+  {short:'BLS Eeco',        full:'BLS (Eeco Ambulance)',                               model:'Maruti Eeco'},
+  {short:'Freezer Van',     full:'Freezer Box Mortuary Van (Force Tempo Traveller Ambulance)', model:'Force Tempo Traveller'},
+  {short:'Hearse',          full:'Hearse Van',                                         model:'Hearse Van'},
+];
+function ambFull(short){const t=AMB_TYPES.find(x=>x.short===short);return t?t.full:short;}
+function ambTypeOptions(sel){return AMB_TYPES.map(t=>`<option value="${t.short}" ${sel===t.short?'selected':''}>${t.full}</option>`).join('');}
 const RIDES=[
-  ['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','08:12 AM','En Route','₹1,250','Jun 22','ALS'],
-  ['MED-2402','Vikram Patel','Suresh Yadav','MH14CD5678','08:45 AM','Completed','₹850','Jun 22','BLS'],
-  ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','09:20 AM','En Route','₹2,100','Jun 22','Neo'],
-  ['MED-2404','Farhan Khan','Rajesh Kumar','MH12AB1234','10:05 AM','Dispatched','₹1,400','Jun 22','ALS'],
-  ['MED-2405','Sunita Rao','Amit Verma','MH16GH3456','10:40 AM','Completed','₹650','Jun 22','BLS'],
-  ['MED-2406','Mohan Das','Suresh Yadav','MH14CD5678','11:15 AM','Cancelled','₹0','Jun 22','BLS'],
-  ['MED-2407','Priya Nair','Deepak Singh','MH12EF9012','11:50 AM','Completed','₹1,800','Jun 22','ALS'],
+  ['MED-2401','Anita Sharma','Rajesh Kumar','MH12AB1234','08:12 AM','En Route','₹1,250','Jun 22','ALS Tempo'],
+  ['MED-2402','Vikram Patel','Suresh Yadav','MH14CD5678','08:45 AM','Completed','₹850','Jun 22','BLS Winger'],
+  ['MED-2403','Newborn (Mehta)','Deepak Singh','MH12EF9012','09:20 AM','En Route','₹2,100','Jun 22','Neo ALS Winger'],
+  ['MED-2404','Farhan Khan','Rajesh Kumar','MH12AB1234','10:05 AM','Dispatched','₹1,400','Jun 22','ALS Tempo'],
+  ['MED-2405','Sunita Rao','Amit Verma','MH16GH3456','10:40 AM','Completed','₹650','Jun 22','BLS Bolero'],
+  ['MED-2406','Mohan Das','Suresh Yadav','MH14CD5678','11:15 AM','Cancelled','₹0','Jun 22','BLS Winger'],
+  ['MED-2407','Priya Nair','Deepak Singh','MH12EF9012','11:50 AM','Completed','₹1,800','Jun 22','Neo ALS Winger'],
 ];
 const AMBULANCES=[
-  ['MH12AB1234','Force Traveller','ALS','Rajesh Kumar','12 Aug 2026','30 Sep 2026','Active','Verified'],
-  ['MH14CD5678','Tata Winger','BLS','Suresh Yadav','05 Jul 2026','18 Dec 2026','Active','Verified'],
-  ['MH12EF9012','Maruti Eeco','Neo','Deepak Singh','22 Nov 2026','14 Mar 2027','Active','Verified'],
-  ['MH16GH3456','Mahindra Bolero','BLS','Amit Verma','01 Jul 2026','09 Oct 2026','Active','Pending'],
-  ['MH18IJ7890','Force Traveller','ALS','— Unassigned','15 Aug 2026','20 Nov 2026','Idle','Pending'],
-  ['MH20KL2345','Tata Winger','BLS','— Unassigned','28 Jun 2026','12 Jan 2027','Maintenance','Verified'],
+  ['MH12AB1234','Force Tempo Traveller','ALS Tempo','Rajesh Kumar','12 Aug 2026','30 Sep 2026','Active','Verified'],
+  ['MH14CD5678','Tata Winger','BLS Winger','Suresh Yadav','05 Jul 2026','18 Dec 2026','Active','Verified'],
+  ['MH12EF9012','Tata Winger','Neo ALS Winger','Deepak Singh','22 Nov 2026','14 Mar 2027','Active','Verified'],
+  ['MH16GH3456','Mahindra Bolero','BLS Bolero','Amit Verma','01 Jul 2026','09 Oct 2026','Active','Pending'],
+  ['MH18IJ7890','Force Tempo Traveller','ALS Tempo','— Unassigned','15 Aug 2026','20 Nov 2026','Idle','Pending'],
+  ['MH20KL2345','Tata Winger','BLS Winger','— Unassigned','28 Jun 2026','12 Jan 2027','Maintenance','Verified'],
 ];
 const DRIVERS=[
   ['Rajesh Kumar','+91 98200 11223','MH12AB1234',342,'4.8','On Duty','Verified'],
@@ -758,7 +788,7 @@ const HISTORY=[
 const VERIFY_DRIVERS=[
   ['Manoj Tiwari','Driver','20 Jun 2026','Under Review',[],''],
   ['Sanjay Pawar','Driver','19 Jun 2026','Submitted',[],''],
-  ['Ravi Chauhan','Driver','18 Jun 2026','Changes Requested',['Aadhaar image is blurry','Upload updated Police Clearance','EMT Certificate expired'],'20 Jun 2026'],
+  ['Ravi Chauhan','Driver','18 Jun 2026','Changes Requested',['PAN card image is unclear.','Upload latest bank passbook.','Aadhaar image is cropped.'],'20 Jun 2026'],
   ['Deepak Singh','Driver','12 Jun 2026','Verified',[],''],
 ];
 const VERIFY_AMB=[
@@ -789,6 +819,39 @@ function badge(status){
 function av(name){const i=name.replace(/[^A-Za-z ]/g,'').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';return `<div class="av">${i}</div>`}
 function toast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 
+/* ---------- Review checklist helpers ---------- */
+// kind: 'Required' | 'Optional' | 'Conditional'
+function ckBadge(kind){const c=kind==='Required'?'b-navy':kind==='Conditional'?'b-amber':'b-gray';return `<span class="badge2 ${c} sm">${kind}</span>`;}
+function ckStatus(done,error,applicable,required){
+  if(applicable===false)return '<span class="badge2 b-gray sm">Not Applicable</span>';
+  if(error)return '<span class="badge2 b-red sm">Error</span>';
+  if(done)return '<span class="badge2 b-green sm">Uploaded</span>';
+  return `<span class="badge2 ${required?'b-red':'b-amber'} sm">Missing</span>`;
+}
+// item: {name, kind, done, error, applicable(default true), required(bool)}
+function ckRow(it){const app=it.applicable!==false;return `<div class="ck-row"><span class="ck-n">${it.name}</span><span class="ck-b">${ckBadge(it.kind)}${ckStatus(it.done,it.error,app,it.required)}</span></div>`;}
+function ckList(items){return items.map(ckRow).join('');}
+function ckSummary(items){
+  const req=items.filter(i=>i.required&&i.applicable!==false);
+  const done=req.filter(i=>i.done&&!i.error).length,miss=req.length-done;
+  return miss===0
+    ? `<div class="ck-summary ok">${ic('check')}All ${req.length} required items uploaded — ready to submit.</div>`
+    : `<div class="ck-summary warn">${ic('alert')}${done} of ${req.length} required items uploaded · ${miss} still missing.</div>`;
+}
+// Per-flow checklist item builders
+function regCkItems(){return REG_DOCS.map(d=>({name:d.n,kind:d.req?'Required':'Optional',done:!!d.done,error:!!d.error,required:!!d.req}));}
+function drvCkItems(){return DRVW_DOCS.map(d=>({name:d.n,kind:d.req?'Required':(d.add?'Optional':'Optional'),done:!!d.done,error:!!d.error,required:!!d.req}));}
+function aaDocCkItems(){return AAW_DOCS.map(d=>({name:d.n,kind:d.req?'Required':'Conditional',done:!!d.done,error:!!d.error,applicable:d.cond?aaCalibRequired():true,required:d.req?true:(d.cond?aaCalibRequired():false)}));}
+function aaMediaCkItems(){const vid=aaVideosRequired();return AAV_MEDIA.map(m=>({name:m.n,kind:m.kind==='video'?'Conditional':'Required',done:!!m.done,error:!!m.error,applicable:m.kind==='video'?vid:true,required:m.kind==='video'?vid:true}));}
+function regReqMissing(){return REG_DOCS.some(d=>d.req&&(!d.done||d.error));}
+function drvReqMissing(){return DRVW_DOCS.some(d=>d.req&&(!d.done||d.error));}
+function aaReqMissing(){
+  const docMiss=AAW_DOCS.some(d=>d.req&&(!d.done||d.error))||(aaCalibRequired()&&AAW_DOCS.some(d=>d.cond&&(!d.done||d.error)));
+  const photoMiss=AAV_MEDIA.some(m=>m.kind==='photo'&&(!m.done||m.error));
+  const vidMiss=aaVideosRequired()&&AAV_MEDIA.some(m=>m.kind==='video'&&(!m.done||m.error));
+  return docMiss||photoMiss||vidMiss;
+}
+
 /* ---------- Drawer / Modal ---------- */
 function openDrawer(html){document.getElementById('drawer').innerHTML=html;document.getElementById('drawer').classList.add('show');document.getElementById('overlay').classList.add('show')}
 function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('modal').classList.add('show');document.getElementById('overlay').classList.add('show')}
@@ -815,7 +878,7 @@ PAGES.dashboard=()=>`
         <select><option>Date: Today</option><option>This Week</option><option>This Month</option></select>
         <select><option>All Drivers</option><option>Rajesh Kumar</option><option>Suresh Yadav</option><option>Deepak Singh</option></select>
         <select><option>All Ambulances</option><option>MH12AB1234</option><option>MH14CD5678</option></select>
-        <select><option>All Types</option><option>ALS</option><option>BLS</option><option>Neo</option></select>
+        <select><option>All Types</option>${AMB_TYPES.map(t=>`<option>${t.short}</option>`).join('')}</select>
       </div>
     </div>
     <div class="card-body flush"><div class="tbl-wrap"><table>
@@ -1036,7 +1099,7 @@ function assignDrawer(reg){
     </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>
   <div class="drawer-body">
     <div class="dsec"><h4>Ambulance Details</h4>
-      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Category</dt><dd>${a[2]}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Status</dt><dd>${badge(a[6])}</dd></dl></div>
+      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Ambulance Type</dt><dd>${ambFull(a[2])}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Status</dt><dd>${badge(a[6])}</dd></dl></div>
     <div class="dsec"><h4>Current Driver</h4>
       ${assigned?`<div class="cell-user">${av(a[3])}<div><b style="color:var(--navy)">${a[3]}</b><div class="t-sub">${drvStatusOf(a[3])}</div></div></div>`:'<span class="t-sub">No driver currently assigned</span>'}</div>
     <div class="dsec"><h4>Assignment History</h4>
@@ -1095,7 +1158,7 @@ PAGES.ambulances=()=>{ambTab=0;const list=ambFilter();return `
     <div style="padding:13px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--gray-100)">
       <div class="search" style="margin:0">${ic('search')}<input placeholder="Search by registration, driver, or type..." style="width:300px;max-width:100%"></div>
       <div class="filters" style="margin-left:auto">
-        <select><option>All Categories</option><option>ALS</option><option>BLS</option><option>Neo</option></select>
+        <select><option>All Types</option>${AMB_TYPES.map(t=>`<option>${t.short}</option>`).join('')}</select>
         <select><option>All Status</option><option>Active</option><option>Idle</option><option>Maintenance</option></select>
         <select><option>All Verification</option><option>Verified</option><option>Pending</option></select>
       </div>
@@ -1251,17 +1314,23 @@ function wizProgress(){
     return `<div class="step ${cls}"><div class="dot">${n<wizStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<WIZ_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;
 }
 const REG_DOCS=[
-  {n:'Business Registration Certificate',req:true,f:'business-reg-cert.pdf',s:'1.2 MB'},
   {n:'GST Certificate',req:true,f:'gst-certificate.pdf',s:'845 KB'},
   {n:'PAN Card',req:true,f:'pan-card.pdf',s:'512 KB'},
-  {n:'Address Proof',req:true,f:'address-proof.pdf',s:'2.1 MB'},
+  {n:'Undertaking (Seal, Stamp & Sign)',req:true,f:'undertaking.pdf',s:'1.0 MB'},
+  {n:'Organogram',req:true,f:'organogram.pdf',s:'780 KB'},
+  {n:'Incorporation Certificate',req:false,f:'incorporation-cert.pdf',s:'1.4 MB'},
+  {n:'MSME Certificate',req:false,f:'msme-cert.pdf',s:'920 KB'},
+  {n:'EPF & ESIC Certificate',req:false,f:'epf-esic-cert.pdf',s:'1.1 MB'},
   {n:'Agency Logo',req:false,logo:true,f:'agency-logo.png',s:'96 KB'},
-  {n:'NABH / ISO Certification',req:false,opt:true,f:'nabh-iso-cert.pdf',s:'1.8 MB'},
 ];
+function docBadge(d){return d.req?'<span class="badge2 b-navy sm">Required</span>':(d.logo?'<span class="badge2 b-gray sm">Branding</span>':'<span class="badge2 b-gray sm">Optional</span>');}
 function docInner(i){const d=REG_DOCS[i];
-  const badge=d.req?'<span class="badge2 b-navy sm">Required</span>':'<span class="badge2 b-gray sm">Optional</span>';
+  if(d.error)return `<div class="du-ic" style="background:var(--red-50);color:var(--red)">${ic('alert')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${docBadge(d)}</div>
+    <div class="du-meta" style="color:var(--red)">Upload failed · file exceeds 5 MB. Try again.</div>
+    <div class="du-act">${ic('upload')}Re-upload file</div></div>`;
   if(!d.done)return `<div class="du-ic">${ic('upload')}</div>
-    <div class="du-main"><div class="du-top"><b>${d.n}</b>${badge}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${docBadge(d)}</div>
     <div class="du-meta">PDF, JPG, PNG · max 5 MB</div>
     <div class="du-act">${ic('upload')}Upload file</div></div>`;
   return `<div class="du-ic">${ic('check')}</div>
@@ -1327,8 +1396,13 @@ function wizVerifyOtp(){
       d.innerHTML=ic('alert')+'Invalid OTP. Please try again.';document.getElementById('wizOtpRow').after(d);}
   }
 }
-function updateDocCount(){const total=REG_DOCS.filter(d=>d.req).length,done=REG_DOCS.filter(d=>d.req&&d.done).length;
-  const el=document.getElementById('docCount');if(el)el.textContent=done+' / '+total+' uploaded';}
+function updateDocCount(){
+  const req=REG_DOCS.filter(d=>d.req),opt=REG_DOCS.filter(d=>!d.req&&!d.logo); // logo = branding, not counted
+  const done=req.filter(d=>d.done).length,optDone=opt.filter(d=>d.done).length;
+  const el=document.getElementById('docCount');if(el)el.textContent=done+' / '+req.length+' Uploaded';
+  const o=document.getElementById('docOptCount');if(o)o.textContent=optDone+' / '+opt.length+' Uploaded';
+  const c=document.getElementById('wizDocContinue');if(c)c.disabled=done<req.length; // block until all required uploaded
+}
 function wizBody(){
   if(wizStep===1)return `
     <h3 style="color:var(--navy);font-size:16px">Agency Details</h3>
@@ -1355,19 +1429,25 @@ function wizBody(){
       <div class="field"><label>Mobile <span class="req">*</span></label><input placeholder="+91 ..."></div>
     </div>
     <div class="wiz-actions end"><button class="btn btn-primary" onclick="wizGo(2)">Continue →</button></div>`;
-  if(wizStep===2){const reqDocs=REG_DOCS.map((d,i)=>i).filter(i=>REG_DOCS[i].req);const addDocs=REG_DOCS.map((d,i)=>i).filter(i=>!REG_DOCS[i].req);
+  if(wizStep===2){
+    const reqDocs=REG_DOCS.map((d,i)=>i).filter(i=>REG_DOCS[i].req);
+    const optDocs=REG_DOCS.map((d,i)=>i).filter(i=>!REG_DOCS[i].req&&!REG_DOCS[i].logo);
+    const brandDocs=REG_DOCS.map((d,i)=>i).filter(i=>REG_DOCS[i].logo);
+    const reqDone=reqDocs.filter(i=>REG_DOCS[i].done).length,optDone=optDocs.filter(i=>REG_DOCS[i].done).length;
+    const gridCards=list=>list.map(i=>`<div class="doc-up${REG_DOCS[i].done?' done':''}" id="doc-card-${i}" onclick="doUpload(${i})">${docInner(i)}</div>`).join('');
     return `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
       <div><h3 style="color:var(--navy);font-size:16px">Document Upload</h3>
       <p style="color:var(--gray-500);font-size:12.5px">Provide your agency's verification documents.</p></div>
-      <div class="count-pill"><span class="cl">Required Documents</span><span class="cv" id="docCount">0 / ${reqDocs.length} uploaded</span></div>
+      <div class="count-pill"><span class="cl">Required Documents</span><span class="cv" id="docCount">${reqDone} / ${reqDocs.length} Uploaded</span><span class="cl" style="margin-top:5px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gray-500)">Optional Documents: <span id="docOptCount">${optDone} / ${optDocs.length} Uploaded</span></span></div>
     </div>
     <div class="trust">${ic('shield')}All documents are securely uploaded and reviewed by the Medurun verification team.</div>
     <div class="wiz-sec-h">Required Documents</div>
-    <div class="doc-grid">${reqDocs.map(i=>`<div class="doc-up${REG_DOCS[i].done?' done':''}" id="doc-card-${i}" onclick="doUpload(${i})">${docInner(i)}</div>`).join('')}</div>
-    <div class="wiz-sec-h">Additional Documents</div>
-    <div class="doc-grid">${addDocs.map(i=>`<div class="doc-up${REG_DOCS[i].done?' done':''}" id="doc-card-${i}" onclick="doUpload(${i})">${docInner(i)}</div>`).join('')}</div>
-    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(1)">← Back</button><button class="btn btn-primary" onclick="wizGo(3)">Continue →</button></div>`;}
+    <div class="doc-grid">${gridCards(reqDocs)}</div>
+    <div class="wiz-sec-h">Optional Documents</div>
+    <div class="doc-grid">${gridCards(optDocs)}</div>
+    ${brandDocs.length?`<div class="wiz-sec-h">Branding (Optional)</div><div class="doc-grid">${gridCards(brandDocs)}</div>`:''}
+    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(1)">← Back</button><button class="btn btn-primary" id="wizDocContinue" onclick="wizGo(3)" ${reqDone<reqDocs.length?'disabled':''}>Continue →</button></div>`;}
   if(wizStep===3)return `
     <h3 style="color:var(--navy);font-size:16px">Admin Account Setup</h3>
     <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:6px">Create the administrator login and verify your mobile number.</p>
@@ -1390,12 +1470,13 @@ function wizBody(){
     <p style="color:var(--gray-500);font-size:13px;margin-bottom:18px">Confirm everything is correct before submitting for Super Admin approval.</p>
     <div class="sec-title">Agency Details</div>
     <dl class="dl"><dt>Agency Name</dt><dd>Rapid Aid Pvt Ltd</dd><dt>Reg. Number</dt><dd>MH/AMB/2021/0457</dd><dt>GSTIN</dt><dd>27AABCR1234M1Z5</dd><dt>City / State</dt><dd>Mumbai, Maharashtra</dd><dt>Ambulances</dt><dd>6</dd><dt>Contact</dt><dd>Sunil Raghavan · +91 98200 00100</dd></dl>
-    <div class="sec-title">Documents</div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px">${['Business Reg. Cert.','GST Certificate','PAN Card','Address Proof','Agency Logo'].map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
+    <div class="sec-title">Agency Documents <button class="lnk" style="float:right;font-weight:600" onclick="wizGo(2)">Edit</button></div>
+    ${ckSummary(regCkItems())}
+    <div>${ckList(regCkItems())}</div>
     <div class="sec-title">Admin Account</div>
     <dl class="dl"><dt>Admin Email</dt><dd>admin@rapidaid.in</dd><dt>Mobile</dt><dd>Verified ✓</dd></dl>
     <label class="check" style="margin-top:20px"><input type="checkbox" id="wizTerms">I confirm the above information is accurate and agree to Medurun's partner terms.</label>
-    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(3)">← Back</button><button class="btn btn-primary" onclick="wizSubmit()">${ic('check')}Submit Application</button></div>`;
+    <div class="wiz-actions"><button class="btn btn-ghost" onclick="wizGo(3)">← Back</button><button class="btn btn-primary" onclick="wizSubmit()" ${regReqMissing()?'disabled':''}>${ic('check')}Submit Application</button></div>`;
   // step 5 — submitted
   return `<div class="success-wrap" style="box-shadow:none;border:none;padding:14px 10px;max-width:none">
     <div class="circle">${ic('check')}</div>
@@ -1411,7 +1492,7 @@ function up(label,req){return `<div class="upload" onclick="this.classList.add('
   ${ic('upload')}<div class="ttl">${label}${req?' <span class="req">*</span>':''}</div><div class="sub">Click to upload</div></div>`}
 function wizRender(){document.getElementById('wizProgress').innerHTML=wizProgress();document.getElementById('wizBody').innerHTML=wizBody();document.getElementById('auth').scrollTop=0}
 function wizGo(n){wizStep=n;wizRender()}
-function wizSubmit(){const t=document.getElementById('wizTerms');if(t&&!t.checked){toast('Please confirm the declaration');return;}wizStep=5;wizRender();}
+function wizSubmit(){if(regReqMissing()){toast('Upload all required documents before submitting');return;}const t=document.getElementById('wizTerms');if(t&&!t.checked){toast('Please confirm the declaration');return;}wizStep=5;wizRender();}
 function startRegistration(){wizStep=1;REG_DOCS.forEach(d=>d.done=false);wizMobileVerified=false;document.getElementById('auth').classList.add('registering');document.getElementById('authMain').style.display='none';document.getElementById('authRegister').style.display='block';wizRender();document.getElementById('auth').scrollTop=0}
 function wizToLogin(){wizStep=1;document.getElementById('auth').classList.remove('registering');document.getElementById('authRegister').style.display='none';document.getElementById('authMain').style.display='block';authStep('login')}
 
@@ -1419,8 +1500,117 @@ function wizToLogin(){wizStep=1;document.getElementById('auth').classList.remove
 /* ---------- Add Ambulance wizard ---------- */
 let aaStep=1;const aaEquip=new Set(['Oxygen Cylinder','Stretcher','First Aid Kit']);
 const AA_EQUIP=['Oxygen Cylinder','Defibrillator','Ventilator','Stretcher','Suction Apparatus','First Aid Kit','ECG Monitor','Spine Board','Infusion Pump','Wheelchair'];
-const AA_STEPS=[['Vehicle','Details'],['Equipment','Checklist'],['Documents','Photos & files'],['Review','Confirm'],['Submit','Done']];
-const AA_DOCS=['Front Photo','Side Photo','Interior Photo','RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit'];
+const AA_STEPS=[['Vehicle','Details'],['Equipment','Checklist'],['Documents','Files'],['Media','Photos & videos'],['Review','Confirm'],['Submit','Done']];
+// Ambulance document checklist. req=required, cond=conditional (calibration for ALS/ACLS)
+const AAW_DOCS=[
+  {n:'Registration Certificate (RC)',req:true},
+  {n:'Insurance',req:true},
+  {n:'Pollution Certificate (PUC)',req:true},
+  {n:'Road Tax Certificate',req:true},
+  {n:'Fitness Certificate',req:true},
+  {n:'Calibration Certificate',cond:true},
+];
+let aawCurrent=-1;
+function aaCalibRequired(){return /\b(ALS|ACLS)\b/i.test(aaReview.cat||'');}
+function aawBadge(d){return d.req?'<span class="badge2 b-navy sm">Required</span>':'<span class="badge2 b-amber sm">Conditional</span>';}
+function aawSize(b){return b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';}
+function aawInner(i){const d=AAW_DOCS[i];
+  if(d.uploading)return `<div class="du-ic">${ic('refresh')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${aawBadge(d)}</div><div class="du-meta">Uploading…</div></div>`;
+  if(d.error)return `<div class="du-ic" style="background:var(--red-50);color:var(--red)">${ic('alert')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${aawBadge(d)}</div>
+    <div class="du-meta" style="color:var(--red)">${d.error}</div>
+    <div class="du-act">${ic('upload')}Choose another file</div></div>`;
+  if(!d.done)return `<div class="du-ic">${ic('upload')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${aawBadge(d)}</div>
+    <div class="du-meta">PDF, JPG, PNG · max 5 MB</div>
+    <div class="du-act">${ic('upload')}Upload file</div></div>`;
+  return `<div class="du-ic">${ic('check')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b><span class="badge2 b-green sm">Uploaded</span></div>
+    <div class="du-file"><b>${d.f}</b> · ${d.s}</div>
+    <div style="display:flex;gap:12px;margin-top:6px"><button class="du-replace" onclick="event.stopPropagation();aawPick(${i})">Replace file</button><button class="du-replace" style="color:var(--red)" onclick="aawRemove(event,${i})">Remove</button></div></div>`;
+}
+function aawRender(i){const el=document.getElementById('aaw-card-'+i);if(el){el.className='doc-up'+(AAW_DOCS[i].done?' done':'')+(AAW_DOCS[i].error?' err':'');el.innerHTML=aawInner(i);}}
+function aawPick(i){if(AAW_DOCS[i].uploading)return;aawCurrent=i;const inp=document.getElementById('aawFileInput');inp.value='';inp.click();}
+function aawFile(input){const i=aawCurrent;if(i<0)return;const d=AAW_DOCS[i],f=input.files&&input.files[0];if(!f)return;
+  const okType=/\.(pdf|jpe?g|png)$/i.test(f.name),okSize=f.size<=5*1024*1024;
+  if(!okType){d.error='Unsupported file type. Use PDF, JPG or PNG.';d.done=false;aawRender(i);return;}
+  if(!okSize){d.error='File exceeds 5 MB. Please upload a smaller file.';d.done=false;aawRender(i);return;}
+  d.error=null;d.uploading=true;aawRender(i);
+  const name=f.name,size=aawSize(f.size);
+  setTimeout(()=>{d.uploading=false;d.done=true;d.f=name;d.s=size;aawRender(i);aawCount();},600);
+}
+function aawRemove(e,i){e.stopPropagation();const d=AAW_DOCS[i];d.done=false;d.error=null;d.f=null;d.s=null;aawRender(i);aawCount();toast('File removed');}
+function aawCount(){
+  const req=AAW_DOCS.filter(d=>d.req),cond=AAW_DOCS.filter(d=>d.cond);
+  const reqDone=req.filter(d=>d.done).length;
+  const el=document.getElementById('aawCount');if(el)el.textContent=reqDone+' / '+req.length+' Uploaded';
+  const co=document.getElementById('aawCondCount');if(co){const cd=cond.filter(d=>d.done).length;co.textContent=cd+' / '+cond.length+' Uploaded';}
+  const blocked=reqDone<req.length||(aaCalibRequired()&&!cond.every(d=>d.done));
+  const c=document.getElementById('aaDocContinue');if(c)c.disabled=blocked;
+}
+/* ---------- Ambulance Photo / Video Verification ---------- */
+const AAV_MEDIA=[
+  {n:'Front Side',kind:'photo',group:'Exterior Photos'},
+  {n:'Right Side',kind:'photo',group:'Exterior Photos'},
+  {n:'Left Side',kind:'photo',group:'Exterior Photos'},
+  {n:'Rear Side',kind:'photo',group:'Exterior Photos',remark:'Both doors closed and opened.'},
+  {n:'Odometer',kind:'photo',group:'Exterior Photos'},
+  {n:'Interior with all lights & fans',kind:'photo',group:'Interior Photos'},
+  {n:'Stretcher',kind:'photo',group:'Interior Photos'},
+  {n:"Attender's Seat",kind:'photo',group:'Interior Photos'},
+  {n:'Oxygen Chamber',kind:'photo',group:'Interior Photos'},
+  {n:'Equipment in switch-on condition',kind:'video',group:'Functional Videos'},
+  {n:'Siren & glowing blinkers with horn',kind:'video',group:'Functional Videos'},
+];
+let aavCurrent=-1;
+function aaVideosRequired(){return aaCalibRequired();} // ACLS / ALS only
+function aavMeta(k){return k==='video'?'MP4, MOV · max 50 MB':'JPG, PNG · max 5 MB';}
+function aavSize(b){return b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';}
+function aavInner(i){const m=AAV_MEDIA[i];const req=m.kind==='photo'||aaVideosRequired();
+  const badge=m.kind==='video'?(aaVideosRequired()?'<span class="badge2 b-navy sm">Required</span>':'<span class="badge2 b-gray sm">Optional</span>'):'<span class="badge2 b-navy sm">Required</span>';
+  if(m.uploading)return `<div class="du-ic">${ic('refresh')}</div><div class="du-main"><div class="du-top"><b>${m.n}</b>${badge}</div><div class="du-meta">Uploading…</div></div>`;
+  if(m.error)return `<div class="du-ic" style="background:var(--red-50);color:var(--red)">${ic('alert')}</div>
+    <div class="du-main"><div class="du-top"><b>${m.n}</b>${badge}</div><div class="du-meta" style="color:var(--red)">${m.error}</div>
+    <div class="du-act">${ic('upload')}Choose another file</div></div>`;
+  if(!m.done)return `<div class="du-ic">${ic(m.kind==='video'?'activity':'upload')}</div>
+    <div class="du-main"><div class="du-top"><b>${m.n}</b>${badge}</div>
+    <div class="du-meta">${aavMeta(m.kind)}</div>${m.remark?`<div class="du-meta" style="color:var(--navy)">${m.remark}</div>`:''}
+    <div class="du-act">${ic('upload')}Upload ${m.kind}</div></div>`;
+  return `<div class="du-ic">${ic('check')}</div>
+    <div class="du-main"><div class="du-top"><b>${m.n}</b><span class="badge2 b-green sm">Uploaded</span></div>
+    <div class="du-file"><b>${m.f}</b> · ${m.s}</div>
+    <div style="display:flex;gap:12px;margin-top:6px"><button class="du-replace" onclick="event.stopPropagation();aavPreview(${i})">Preview</button><button class="du-replace" onclick="event.stopPropagation();aavPick(${i})">Replace file</button><button class="du-replace" style="color:var(--red)" onclick="aavRemove(event,${i})">Remove</button></div></div>`;
+}
+function aavRender(i){const el=document.getElementById('aav-card-'+i);if(el){el.className='doc-up'+(AAV_MEDIA[i].done?' done':'')+(AAV_MEDIA[i].error?' err':'');el.innerHTML=aavInner(i);}}
+function aavPick(i){if(AAV_MEDIA[i].uploading)return;aavCurrent=i;const inp=document.getElementById('aavFileInput');inp.accept=AAV_MEDIA[i].kind==='video'?'.mp4,.mov':'.jpg,.jpeg,.png';inp.value='';inp.click();}
+function aavFile(input){const i=aavCurrent;if(i<0)return;const m=AAV_MEDIA[i],f=input.files&&input.files[0];if(!f)return;
+  const isVid=m.kind==='video';
+  const okType=isVid?/\.(mp4|mov)$/i.test(f.name):/\.(jpe?g|png)$/i.test(f.name);
+  const okSize=f.size<=(isVid?50:5)*1024*1024;
+  if(!okType){m.error=isVid?'Unsupported format. Use MP4 or MOV.':'Unsupported format. Use JPG or PNG.';m.done=false;aavRender(i);return;}
+  if(!okSize){m.error='File exceeds '+(isVid?'50':'5')+' MB. Please upload a smaller file.';m.done=false;aavRender(i);return;}
+  m.error=null;m.uploading=true;aavRender(i);
+  const name=f.name,size=aavSize(f.size);
+  setTimeout(()=>{m.uploading=false;m.done=true;m.f=name;m.s=size;aavRender(i);aavCount();},600);
+}
+function aavRemove(e,i){e.stopPropagation();const m=AAV_MEDIA[i];m.done=false;m.error=null;m.f=null;m.s=null;aavRender(i);aavCount();toast('File removed');}
+function aavPreview(i){const m=AAV_MEDIA[i],isVid=m.kind==='video';
+  openModal(`<div class="modal-head"><h3>${m.n}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
+    <div class="modal-body"><div style="border:1px solid var(--gray-200);border-radius:11px;background:var(--gray-50);height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--gray-400)">
+      <div style="width:54px;height:54px;border-radius:12px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--navy)">${ic(isVid?'activity':'eye')}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gray-500)">${m.f||(m.n+(isVid?'.mp4':'.jpg'))}</div><div style="font-size:11.5px">Sample ${isVid?'video':'image'} preview</div></div></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="toast('Downloading ${m.n}')">${ic('doc')}Download</button></div>`);
+}
+function aavCount(){
+  const photos=AAV_MEDIA.filter(m=>m.kind==='photo'),videos=AAV_MEDIA.filter(m=>m.kind==='video');
+  const pDone=photos.filter(m=>m.done).length,vDone=videos.filter(m=>m.done).length;
+  const p=document.getElementById('aavPhotoCount');if(p)p.textContent=pDone+' / '+photos.length+' Uploaded';
+  const v=document.getElementById('aavVideoCount');if(v)v.textContent=vDone+' / '+videos.length+' Uploaded';
+  const blocked=pDone<photos.length||(aaVideosRequired()&&vDone<videos.length);
+  const c=document.getElementById('aaMediaContinue');if(c)c.disabled=blocked;
+}
+function aavReset(){AAV_MEDIA.forEach(m=>{m.done=false;m.error=null;m.uploading=false;m.f=null;m.s=null;});}
 function aaProgress(){return `<div class="stepper" style="max-width:none;margin-bottom:24px">`+AA_STEPS.map((s,i)=>{const n=i+1;const cls=n<aaStep?'done':n==aaStep?'active':'';
   return `<div class="step ${cls}"><div class="dot">${n<aaStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<AA_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;}
 function aaEquipBody(){return `<div class="equip-bar"><div><h3 style="color:var(--navy);font-size:16px">Equipment Checklist</h3><p style="color:var(--gray-500);font-size:12.5px">Select all equipment available in this ambulance.</p></div>
@@ -1433,8 +1623,8 @@ function aaBody(){
     <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Basic identification for the vehicle.</p>
     <div class="form-grid">
       <div class="field"><label>Registration No. <span class="req">*</span></label><input id="aaReg" value="MH12AB1234" placeholder="MH12AB1234"></div>
-      <div class="field"><label>Vehicle Type / Model <span class="req">*</span></label><input id="aaModel" value="Force Traveller" placeholder="Force Traveller"></div>
-      <div class="field"><label>Category <span class="req">*</span></label><select id="aaCat"><option>ALS — Advanced Life Support</option><option>BLS — Basic Life Support</option><option>Neo — Neonatal</option></select></div>
+      <div class="field"><label>Vehicle Type / Model <span class="req">*</span></label><input id="aaModel" value="Force Tempo Traveller" placeholder="e.g. Force Tempo Traveller"></div>
+      <div class="field"><label>Ambulance Type <span class="req">*</span></label><select id="aaCat">${ambTypeOptions(aaReview.cat)}</select></div>
       <div class="field"><label>Manufacture Year</label><input id="aaYear" type="number" value="2023" placeholder="2023"></div>
       <div class="field"><label>Chassis No.</label><input id="aaChassis" placeholder="MAT..."></div>
       <div class="field"><label>Engine No.</label><input id="aaEngine" placeholder="ENG..."></div>
@@ -1442,23 +1632,64 @@ function aaBody(){
     <div class="aa-actions"><button class="btn btn-ghost" onclick="go('ambulances')">Cancel</button><button class="btn btn-primary" onclick="aaGo(2)">Continue →</button></div>`;
   if(aaStep===2)return aaEquipBody()+`
     <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(1)">← Back</button><button class="btn btn-primary" onclick="aaGo(3)">Continue →</button></div>`;
-  if(aaStep===3)return `
-    <h3 style="color:var(--navy);font-size:16px">Documents &amp; Photos</h3>
-    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Upload vehicle photos and required documents (PDF/JPG/PNG).</p>
-    <div class="upload-grid">${AA_DOCS.map(d=>up(d,true)).join('')}</div>
-    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(2)">← Back</button><button class="btn btn-primary" onclick="aaGo(4)">Continue →</button></div>`;
-  if(aaStep===4){const g=id=>(document.getElementById(id)||{}).value||'—';
+  if(aaStep===3){
+    const reqDocs=AAW_DOCS.map((d,i)=>i).filter(i=>AAW_DOCS[i].req);
+    const condDocs=AAW_DOCS.map((d,i)=>i).filter(i=>AAW_DOCS[i].cond);
+    const calib=aaCalibRequired();
+    const reqDone=reqDocs.filter(i=>AAW_DOCS[i].done).length,condDone=condDocs.filter(i=>AAW_DOCS[i].done).length;
+    const cards=list=>list.map(i=>`<div class="doc-up${AAW_DOCS[i].done?' done':''}${AAW_DOCS[i].error?' err':''}" id="aaw-card-${i}" onclick="aawPick(${i})">${aawInner(i)}</div>`).join('');
+    const blocked=reqDone<reqDocs.length||(calib&&condDone<condDocs.length);
+    return `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+      <div><h3 style="color:var(--navy);font-size:16px">Documents</h3>
+      <p style="color:var(--gray-500);font-size:12.5px">Upload the ambulance's verification documents.</p></div>
+      <div class="count-pill"><span class="cl">Required Documents</span><span class="cv" id="aawCount">${reqDone} / ${reqDocs.length} Uploaded</span>${calib?`<span class="cl" style="margin-top:5px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gray-500)">Conditional Document: <span id="aawCondCount">${condDone} / ${condDocs.length} Uploaded</span></span>`:''}</div>
+    </div>
+    <div class="trust">${ic('shield')}All documents are securely uploaded and reviewed by the Medurun verification team.</div>
+    <div class="wiz-sec-h">Required Documents</div>
+    <div class="doc-grid">${cards(reqDocs)}</div>
+    ${calib?`<div class="wiz-sec-h">Conditional Document · ${aaReview.cat.split(' ')[0]}</div><div class="doc-grid">${cards(condDocs)}</div>`:''}
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(2)">← Back</button><button class="btn btn-primary" id="aaDocContinue" onclick="aaGo(4)" ${blocked?'disabled':''}>Continue →</button></div>`;}
+  if(aaStep===4){
+    const photos=AAV_MEDIA.map((m,i)=>i).filter(i=>AAV_MEDIA[i].kind==='photo');
+    const videos=AAV_MEDIA.map((m,i)=>i).filter(i=>AAV_MEDIA[i].kind==='video');
+    const vidReq=aaVideosRequired();
+    const pDone=photos.filter(i=>AAV_MEDIA[i].done).length,vDone=videos.filter(i=>AAV_MEDIA[i].done).length;
+    const ext=photos.filter(i=>AAV_MEDIA[i].group==='Exterior Photos');
+    const intr=photos.filter(i=>AAV_MEDIA[i].group==='Interior Photos');
+    const cards=list=>list.map(i=>`<div class="doc-up${AAV_MEDIA[i].done?' done':''}${AAV_MEDIA[i].error?' err':''}" id="aav-card-${i}" onclick="aavPick(${i})">${aavInner(i)}</div>`).join('');
+    const blocked=pDone<photos.length||(vidReq&&vDone<videos.length);
+    return `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+      <div><h3 style="color:var(--navy);font-size:16px">Photo / Video Verification</h3>
+      <p style="color:var(--gray-500);font-size:12.5px">Upload clear photos and functional videos of the ambulance.</p></div>
+      <div class="count-pill"><span class="cl">Photos</span><span class="cv" id="aavPhotoCount">${pDone} / ${photos.length} Uploaded</span><span class="cl" style="margin-top:5px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gray-500)">Videos: <span id="aavVideoCount">${vDone} / ${videos.length} Uploaded</span></span></div>
+    </div>
+    <div class="trust">${ic('shield')}All media is securely uploaded and reviewed by the Medurun verification team.</div>
+    <div class="wiz-sec-h">Exterior Photos</div>
+    <div class="doc-grid">${cards(ext)}</div>
+    <div class="wiz-sec-h">Interior Photos</div>
+    <div class="doc-grid">${cards(intr)}</div>
+    <div class="wiz-sec-h">Functional Videos${vidReq?' · Required for '+aaReview.cat.split(' ')[0]:' · Optional for '+aaReview.cat.split(' ')[0]}</div>
+    <div class="doc-grid">${cards(videos)}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(3)">← Back</button><button class="btn btn-primary" id="aaMediaContinue" onclick="aaGo(5)" ${blocked?'disabled':''}>Continue →</button></div>`;}
+  if(aaStep===5){
+    const mediaDone=AAV_MEDIA.filter(m=>m.done).length;
     return `
     <h3 style="color:var(--navy);font-size:16px">Review</h3>
     <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Confirm details before submitting for verification.</p>
     <div class="sec-title" style="margin-top:6px">Vehicle Details <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(1)">Edit</button></div>
-    <dl class="dl"><dt>Registration</dt><dd>${aaReview.reg}</dd><dt>Model</dt><dd>${aaReview.model}</dd><dt>Category</dt><dd>${aaReview.cat}</dd><dt>Manufacture Year</dt><dd>${aaReview.year}</dd></dl>
+    <dl class="dl"><dt>Registration</dt><dd>${aaReview.reg}</dd><dt>Model</dt><dd>${aaReview.model}</dd><dt>Ambulance Type</dt><dd>${ambFull(aaReview.cat)}</dd><dt>Manufacture Year</dt><dd>${aaReview.year}</dd></dl>
     <div class="sec-title">Equipment (${aaEquip.size}) <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(2)">Edit</button></div>
     <div style="display:flex;flex-wrap:wrap;gap:7px">${aaEquip.size?[...aaEquip].map(e=>`<span class="badge2 b-navy">${e}</span>`).join(''):'<span class="t-sub">No equipment selected</span>'}</div>
-    <div class="sec-title">Documents &amp; Photos <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(3)">Edit</button></div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px">${AA_DOCS.map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
-    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(3)">← Back</button><button class="btn btn-primary" onclick="aaSubmit()">${ic('check')}Submit for Verification</button></div>`;}
-  // step 5
+    <div class="sec-title">Ambulance Documents <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(3)">Edit</button></div>
+    ${ckSummary(aaDocCkItems())}
+    <div>${ckList(aaDocCkItems())}</div>
+    <div class="sec-title">Vehicle Photo / Video Verification <button class="lnk" style="float:right;font-weight:600" onclick="aaGo(4)">Edit</button></div>
+    ${ckSummary(aaMediaCkItems())}
+    <div>${ckList(aaMediaCkItems())}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="aaGo(4)">← Back</button><button class="btn btn-primary" onclick="aaSubmit()" ${aaReqMissing()?'disabled':''}>${ic('check')}Submit for Verification</button></div>`;}
+  // step 6
   return `<div class="success-wrap" style="box-shadow:none;border:none;max-width:none;padding:14px 10px">
     <div class="circle">${ic('check')}</div>
     <h2>Ambulance Submitted</h2>
@@ -1468,14 +1699,15 @@ function aaBody(){
       <button class="btn btn-ghost" onclick="aaReset();go('addambulance')">Add Another</button>
       <button class="btn btn-primary" onclick="go('ambulances')">Back to Fleet</button></div></div>`;
 }
-let aaReview={reg:'MH12AB1234',model:'Force Traveller',cat:'ALS — Advanced Life Support',year:'2023'};
+let aaReview={reg:'MH12AB1234',model:'Force Tempo Traveller',cat:'ALS Tempo',year:'2023'};
 function aaCapture(){const g=id=>(document.getElementById(id)||{}).value;
   if(document.getElementById('aaReg'))aaReview={reg:g('aaReg')||'—',model:g('aaModel')||'—',cat:g('aaCat')||'—',year:g('aaYear')||'—'};}
 function aaRender(){document.getElementById('aaProgress').innerHTML=aaProgress();document.getElementById('aaBody').innerHTML=aaBody();window.scrollTo(0,0);}
 function aaGo(n){if(aaStep===1)aaCapture();aaStep=n;aaRender();}
-function aaSubmit(){aaStep=5;aaRender();toast('Ambulance submitted for verification');}
-function aaReset(){aaStep=1;aaEquip.clear();['Oxygen Cylinder','Stretcher','First Aid Kit'].forEach(e=>aaEquip.add(e));aaReview={reg:'MH12AB1234',model:'Force Traveller',cat:'ALS — Advanced Life Support',year:'2023'};}
-PAGES.addambulance=()=>{aaStep=1;return `
+function aaSubmit(){if(aaReqMissing()){toast('Upload all required documents and media before submitting');return;}aaStep=6;aaRender();toast('Ambulance submitted for verification');}
+function aawReset(){AAW_DOCS.forEach(d=>{d.done=false;d.error=null;d.uploading=false;d.f=null;d.s=null;});}
+function aaReset(){aaStep=1;aaEquip.clear();['Oxygen Cylinder','Stretcher','First Aid Kit'].forEach(e=>aaEquip.add(e));aawReset();aavReset();aaReview={reg:'MH12AB1234',model:'Force Tempo Traveller',cat:'ALS Tempo',year:'2023'};}
+PAGES.addambulance=()=>{aaStep=1;aawReset();aavReset();return `
   <div style="max-width:900px;margin:0 auto">
     <div class="page-head"><div><h2>Add Ambulance</h2><p>Register a new vehicle to your fleet</p></div></div>
     <div class="card"><div class="card-body">
@@ -1487,7 +1719,43 @@ PAGES.addambulance=()=>{aaStep=1;return `
 /* ---------- Add Driver wizard ---------- */
 let dwStep=1;
 const DW_STEPS=[['Personal','Details'],['Credentials','License & ID'],['Documents','Photos & files'],['Review','Confirm'],['Submit','Done']];
-const DW_DOCS=['Driver Photo','Driving License','Aadhaar Card','EMT Certificate','Police Clearance','Medical Fitness'];
+// Driver document checklist. req=required, photo=optional, add=additional optional (demoted, not checklist-required)
+const DRVW_DOCS=[
+  {n:'Driving Licence',req:true,f:'driving-licence.pdf',s:'1.1 MB'},
+  {n:'PAN Card',req:true,f:'pan-card.pdf',s:'512 KB'},
+  {n:'Aadhaar Card / Voter ID',req:true,f:'aadhaar-voter-id.pdf',s:'680 KB'},
+  {n:'Bank Passbook',req:true,f:'bank-passbook.pdf',s:'540 KB'},
+  {n:'Passport Size Photo',req:false,photo:true,f:'photo.jpg',s:'96 KB'},
+  {n:'EMT Certificate',req:false,add:true,f:'emt-cert.pdf',s:'820 KB'},
+  {n:'Police Clearance',req:false,add:true,f:'police-clearance.pdf',s:'1.0 MB'},
+  {n:'Medical Fitness',req:false,add:true,f:'medical-fitness.pdf',s:'760 KB'},
+];
+function drvwBadge(d){return d.req?'<span class="badge2 b-navy sm">Required</span>':(d.add?'<span class="badge2 b-gray sm">Additional</span>':'<span class="badge2 b-gray sm">Optional</span>');}
+function drvwInner(i){const d=DRVW_DOCS[i];
+  if(d.error)return `<div class="du-ic" style="background:var(--red-50);color:var(--red)">${ic('alert')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${drvwBadge(d)}</div>
+    <div class="du-meta" style="color:var(--red)">Upload failed · file exceeds 5 MB. Try again.</div>
+    <div class="du-act">${ic('upload')}Re-upload file</div></div>`;
+  if(!d.done)return `<div class="du-ic">${ic('upload')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b>${drvwBadge(d)}</div>
+    <div class="du-meta">PDF, JPG, PNG · max 5 MB</div>
+    <div class="du-act">${ic('upload')}Upload file</div></div>`;
+  return `<div class="du-ic">${ic('check')}</div>
+    <div class="du-main"><div class="du-top"><b>${d.n}</b><span class="badge2 b-green sm">Uploaded</span></div>
+    <div class="du-file"><b>${d.f}</b> · ${d.s}</div>
+    <button class="du-replace" onclick="drvwReplace(event,${i})">Replace file</button></div>
+    ${d.photo?`<div class="du-thumb">${ic('person')}</div>`:''}`;
+}
+function drvwUpload(i){const d=DRVW_DOCS[i];if(d.done)return;d.done=true;
+  const el=document.getElementById('drvw-card-'+i);el.classList.add('done');el.innerHTML=drvwInner(i);drvwCount();}
+function drvwReplace(e,i){e.stopPropagation();toast('Choose a new file to replace');}
+function drvwCount(){
+  const req=DRVW_DOCS.filter(d=>d.req),opt=DRVW_DOCS.filter(d=>!d.req&&!d.add); // photo only
+  const done=req.filter(d=>d.done).length,optDone=opt.filter(d=>d.done).length;
+  const el=document.getElementById('drvwCount');if(el)el.textContent=done+' / '+req.length+' Uploaded';
+  const o=document.getElementById('drvwOptCount');if(o)o.textContent=optDone+' / '+opt.length+' Uploaded';
+  const c=document.getElementById('dwDocContinue');if(c)c.disabled=done<req.length; // block until all required uploaded
+}
 let dwReview={name:'New Driver',mobile:'+91 ...',email:'driver@rapidaid.in',license:'—'};
 function dwProgress(){return `<div class="stepper" style="max-width:none;margin-bottom:24px">`+DW_STEPS.map((s,i)=>{const n=i+1;const cls=n<dwStep?'done':n==dwStep?'active':'';
   return `<div class="step ${cls}"><div class="dot">${n<dwStep?'✓':n}</div><div class="txt"><b>${s[0]}</b><span>${s[1]}</span></div>${i<DW_STEPS.length-1?'<div class="bar"></div>':''}</div>`}).join('')+`</div>`;}
@@ -1514,11 +1782,25 @@ function dwBody(){
       <div class="field"><label>Blood Group</label><select><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
     </div>
     <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(1)">← Back</button><button class="btn btn-primary" onclick="dwGo(3)">Continue →</button></div>`;
-  if(dwStep===3)return `
-    <h3 style="color:var(--navy);font-size:16px">Documents</h3>
-    <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Upload the driver's photo and required documents (PDF/JPG/PNG).</p>
-    <div class="upload-grid">${DW_DOCS.map((d,i)=>up(d,i!==3)).join('')}</div>
-    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(2)">← Back</button><button class="btn btn-primary" onclick="dwGo(4)">Continue →</button></div>`;
+  if(dwStep===3){
+    const reqDocs=DRVW_DOCS.map((d,i)=>i).filter(i=>DRVW_DOCS[i].req);
+    const optDocs=DRVW_DOCS.map((d,i)=>i).filter(i=>!DRVW_DOCS[i].req&&!DRVW_DOCS[i].add);
+    const addDocs=DRVW_DOCS.map((d,i)=>i).filter(i=>DRVW_DOCS[i].add);
+    const reqDone=reqDocs.filter(i=>DRVW_DOCS[i].done).length,optDone=optDocs.filter(i=>DRVW_DOCS[i].done).length;
+    const cards=list=>list.map(i=>`<div class="doc-up${DRVW_DOCS[i].done?' done':''}" id="drvw-card-${i}" onclick="drvwUpload(${i})">${drvwInner(i)}</div>`).join('');
+    return `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+      <div><h3 style="color:var(--navy);font-size:16px">Documents</h3>
+      <p style="color:var(--gray-500);font-size:12.5px">Upload the driver's verification documents.</p></div>
+      <div class="count-pill"><span class="cl">Required Documents</span><span class="cv" id="drvwCount">${reqDone} / ${reqDocs.length} Uploaded</span><span class="cl" style="margin-top:5px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gray-500)">Optional Documents: <span id="drvwOptCount">${optDone} / ${optDocs.length} Uploaded</span></span></div>
+    </div>
+    <div class="trust">${ic('shield')}All documents are securely uploaded and reviewed by the Medurun verification team.</div>
+    <div class="wiz-sec-h">Required Documents</div>
+    <div class="doc-grid">${cards(reqDocs)}</div>
+    <div class="wiz-sec-h">Optional Document</div>
+    <div class="doc-grid">${cards(optDocs)}</div>
+    ${addDocs.length?`<div class="wiz-sec-h">Additional Documents</div><div class="doc-grid">${cards(addDocs)}</div>`:''}
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(2)">← Back</button><button class="btn btn-primary" id="dwDocContinue" onclick="dwGo(4)" ${reqDone<reqDocs.length?'disabled':''}>Continue →</button></div>`;}
   if(dwStep===4)return `
     <h3 style="color:var(--navy);font-size:16px">Review</h3>
     <p style="color:var(--gray-500);font-size:12.5px;margin-bottom:14px">Confirm details before submitting for verification.</p>
@@ -1526,9 +1808,10 @@ function dwBody(){
     <dl class="dl"><dt>Full Name</dt><dd>${dwReview.name}</dd><dt>Mobile</dt><dd>${dwReview.mobile}</dd><dt>Email</dt><dd>${dwReview.email}</dd></dl>
     <div class="sec-title">Credentials <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(2)">Edit</button></div>
     <dl class="dl"><dt>License No.</dt><dd>${dwReview.license}</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Aadhaar</dt><dd>XXXX XXXX 4821</dd></dl>
-    <div class="sec-title">Documents <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(3)">Edit</button></div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px">${DW_DOCS.map(d=>`<span class="badge2 b-green">${d}</span>`).join('')}</div>
-    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(3)">← Back</button><button class="btn btn-primary" onclick="dwSubmit()">${ic('check')}Submit for Verification</button></div>`;
+    <div class="sec-title">Driver Documents <button class="lnk" style="float:right;font-weight:600" onclick="dwGo(3)">Edit</button></div>
+    ${ckSummary(drvCkItems())}
+    <div>${ckList(drvCkItems())}</div>
+    <div class="aa-actions"><button class="btn btn-ghost" onclick="dwGo(3)">← Back</button><button class="btn btn-primary" onclick="dwSubmit()" ${drvReqMissing()?'disabled':''}>${ic('check')}Submit for Verification</button></div>`;
   // step 5
   return `<div class="success-wrap" style="box-shadow:none;border:none;max-width:none;padding:14px 10px">
     <div class="circle">${ic('check')}</div>
@@ -1544,9 +1827,9 @@ function dwCapture(){const g=id=>(document.getElementById(id)||{}).value;
   if(document.getElementById('dwLicense'))dwReview={...dwReview,license:g('dwLicense')||'—'};}
 function dwRender(){document.getElementById('dwProgress').innerHTML=dwProgress();document.getElementById('dwBody').innerHTML=dwBody();window.scrollTo(0,0);}
 function dwGo(n){if(document.getElementById('dwName')||document.getElementById('dwLicense'))dwCapture();dwStep=n;dwRender();}
-function dwSubmit(){dwStep=5;dwRender();toast('Driver submitted for verification');}
-function dwReset(){dwStep=1;dwReview={name:'New Driver',mobile:'+91 ...',email:'driver@rapidaid.in',license:'—'};}
-PAGES.adddriver=()=>{dwStep=1;return `
+function dwSubmit(){if(drvReqMissing()){toast('Upload all required documents before submitting');return;}dwStep=5;dwRender();toast('Driver submitted for verification');}
+function dwReset(){dwStep=1;DRVW_DOCS.forEach(d=>d.done=false);dwReview={name:'New Driver',mobile:'+91 ...',email:'driver@rapidaid.in',license:'—'};}
+PAGES.adddriver=()=>{dwStep=1;DRVW_DOCS.forEach(d=>d.done=false);return `
   <div style="max-width:900px;margin:0 auto">
     <div class="page-head"><div><h2>Add Driver</h2><p>Onboard a new driver to your agency</p></div></div>
     <div class="card"><div class="card-body">
@@ -1581,7 +1864,7 @@ function rideDrawer(id){
     <div class="dsec"><h4>Patient</h4>
       <div class="cell-user">${av(r.patient)}<div><b style="color:var(--navy)">${r.patient}</b><div class="t-sub">${r.date}</div></div></div></div>
     <div class="dsec"><h4>Trip</h4>
-      <dl class="dl"><dt>Driver</dt><dd>${r.driver}</dd><dt>Ambulance</dt><dd>${r.amb}</dd><dt>Type</dt><dd>${r.type}</dd><dt>Pickup Time</dt><dd>${r.time}</dd><dt>Fare</dt><dd style="color:var(--navy);font-weight:700">${r.fare}</dd></dl></div>
+      <dl class="dl"><dt>Driver</dt><dd>${r.driver}</dd><dt>Ambulance</dt><dd>${r.amb}</dd><dt>Type</dt><dd>${r.type&&r.type!=='—'?ambFull(r.type):'—'}</dd><dt>Pickup Time</dt><dd>${r.time}</dd><dt>Fare</dt><dd style="color:var(--navy);font-weight:700">${r.fare}</dd></dl></div>
     <div class="dsec"><h4>Route</h4>
       <div class="route" style="margin:0"><div class="line"><div class="o"></div><div class="l" style="min-height:30px"></div><div class="d"></div></div>
         <div class="pts"><b>${r.from}</b><span>Pickup</span><b>${r.to}</b><span>Drop-off</span></div></div></div>
@@ -1613,12 +1896,60 @@ function rideInvoice(id){
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-ghost" onclick="toast('Invoice emailed to patient')">${ic('doc')}Email</button><button class="btn btn-primary" onclick="toast('✓ Invoice downloaded')">${ic('doc')}Download PDF</button></div>`);
 }
 const AMB_DOC_DEFS=['RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit','Front Photo','Side Photo','Interior Photo'];
-const DRV_DOC_DEFS=['Driver Photo','Driving License','Aadhaar','EMT Certificate','Police Clearance','Medical Fitness'];
+// Latest Medurun Driver Document Checklist
+const DRV_DOCS=[
+  {n:'Driving Licence',kind:'Required'},
+  {n:'PAN Card',kind:'Required'},
+  {n:'Aadhaar Card / Voter ID',kind:'Required'},
+  {n:'Bank Passbook',kind:'Required'},
+  {n:'Passport Size Photo',kind:'Optional'},
+  {n:'EMT Certificate',kind:'Additional'},
+  {n:'Police Clearance',kind:'Additional'},
+  {n:'Medical Fitness',kind:'Additional'},
+];
 let curDocs={defs:[],state:[]}; // shared doc context for whichever drawer is open
 function ambStatuses(a){return AMB_DOC_DEFS.map((d,i)=>a[7]==='Verified'?(i<6?'Verified':'Uploaded'):['Verified','Uploaded','Pending Verification','Pending Verification','Missing','Uploaded','Pending Verification','Missing'][i%8]);}
-function drvStatuses(d){return DRV_DOC_DEFS.map((x,i)=>d[6]==='Verified'?(i<5?'Verified':'Uploaded'):['Verified','Uploaded','Pending Verification','Missing','Pending Verification','Uploaded'][i%6]);}
 function ambSetDocs(a){curDocs={defs:AMB_DOC_DEFS,state:ambStatuses(a)};return docRowsHTML();}
-function drvSetDocs(d){curDocs={defs:DRV_DOC_DEFS,state:drvStatuses(d)};return docRowsHTML();}
+function drvDocStatus(d,doc){
+  if(d[6]==='Verified')return doc.kind==='Required'?'Verified':'Uploaded';
+  const missing={'Bank Passbook':1,'Police Clearance':1};
+  if(missing[doc.n])return 'Missing';
+  return doc.kind==='Required'?'Pending Verification':'Uploaded';
+}
+function drvKindBadge(k){return `<span class="badge2 ${k==='Required'?'b-navy':'b-gray'} sm" style="margin-left:6px">${k}</span>`;}
+function drvDocRow(d,doc){const st=drvDocStatus(d,doc);
+  return `<div class="ddoc"><div class="di">${ic('doc')}</div><div class="dn"><b>${doc.n}${drvKindBadge(doc.kind)}</b>
+    <div class="da"><button onclick="vqPreview('${doc.n}')">Preview</button><span style="color:var(--gray-300)">·</span><button onclick="vqDownload('${doc.n}')">Download</button></div></div>${badge(st)}</div>`;
+}
+function drvDocsSection(d){
+  return [['Required Documents','Required'],['Optional Document','Optional'],['Additional Documents','Additional']].map(([label,kind])=>{
+    const items=DRV_DOCS.filter(x=>x.kind===kind);if(!items.length)return '';
+    return `<div class="ck-subh">${label}</div>`+items.map(doc=>drvDocRow(d,doc)).join('');
+  }).join('');
+}
+// Latest Medurun Ambulance Document Checklist (drawer view)
+function ambCalibApplicable(a){return /\b(ALS|ACLS)\b/i.test(a[2]||'');}
+function ambKindBadge(k){return `<span class="badge2 ${k==='Required'?'b-navy':'b-amber'} sm" style="margin-left:6px">${k}</span>`;}
+function ambDocStatus(a,name,cond){
+  if(cond&&!ambCalibApplicable(a))return 'Not Applicable';
+  if(a[7]==='Verified')return 'Verified';
+  const missing={'Road Tax Certificate':1,'Calibration Certificate':1,'Rear Side':1,'Siren & glowing blinkers with horn':1};
+  if(missing[name])return 'Missing';
+  return 'Uploaded';
+}
+function ambDocRow(a,name,kind,cond){const st=ambDocStatus(a,name,cond);const e=name.replace(/'/g,"\\'");
+  return `<div class="ddoc"><div class="di">${ic('doc')}</div><div class="dn"><b>${name}${ambKindBadge(kind)}</b>
+    <div class="da"><button onclick="vqPreview('${e}')">Preview</button><span style="color:var(--gray-300)">·</span><button onclick="vqDownload('${e}')">Download</button></div></div>${badge(st)}</div>`;
+}
+function ambDocsSection(a){
+  const req=['Registration Certificate (RC)','Insurance','Pollution Certificate (PUC)','Road Tax Certificate','Fitness Certificate'];
+  const photos=['Front Side','Right Side','Left Side','Rear Side','Odometer','Interior with all lights & fans','Stretcher',"Attender's Seat",'Oxygen Chamber'];
+  const videos=['Equipment in switch-on condition','Siren & glowing blinkers with horn'];
+  return `<div class="ck-subh">Required Documents</div>${req.map(n=>ambDocRow(a,n,'Required',false)).join('')}
+    <div class="ck-subh">Conditional Document</div>${ambDocRow(a,'Calibration Certificate','Conditional',true)}
+    <div class="ck-subh">Vehicle Photos</div>${photos.map(n=>ambDocRow(a,n,'Required',false)).join('')}
+    <div class="ck-subh">Functional Videos</div>${videos.map(n=>ambDocRow(a,n,'Conditional',true)).join('')}`;
+}
 function docRow(i){const d=curDocs.defs[i],st=curDocs.state[i];
   const acts=[];
   if(st!=='Missing')acts.push(`<button onclick="docView(${i})">View file</button>`);
@@ -1674,12 +2005,15 @@ function ambDrawer(reg,mode){
         <div class="form-grid">
           <div class="field"><label>Registration No</label><input value="${a[0]}"></div>
           <div class="field"><label>Vehicle Type / Model</label><input value="${a[1]}"></div>
-          <div class="field"><label>Category</label><select><option ${a[2]==='ALS'?'selected':''}>ALS</option><option ${a[2]==='BLS'?'selected':''}>BLS</option><option ${a[2]==='Neo'?'selected':''}>Neo</option></select></div>
+          <div class="field"><label>Ambulance Type</label><select>${ambTypeOptions(a[2])}</select></div>
           <div class="field"><label>Manufacture Year</label><input type="number" value="2023"></div>
           <div class="field"><label>Chassis No</label><input placeholder="MAT..."></div>
           <div class="field"><label>Engine No</label><input placeholder="ENG..."></div>
           <div class="field"><label>Insurance Expiry</label><input value="${a[4]}"></div>
           <div class="field"><label>Fitness Expiry</label><input value="${a[5]}"></div>
+          <div class="field"><label>PUC Expiry</label><input value="30 Sep 2026"></div>
+          <div class="field"><label>Road Tax Expiry</label><input value="31 Mar 2027"></div>
+          ${ambCalibApplicable(a)?'<div class="field"><label>Calibration Expiry</label><input value="15 Aug 2026"></div>':''}
         </div></div>
       <div class="dsec"><h4>Assignment</h4>
         <div class="form-grid">
@@ -1694,13 +2028,13 @@ function ambDrawer(reg,mode){
   // view / docs
   openDrawer(head+`<div class="drawer-body" id="ambDrawerBody">
     <div class="dsec"><h4>Vehicle Details</h4>
-      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Category</dt><dd>${a[2]}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
+      <dl class="dl"><dt>Registration</dt><dd>${a[0]}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Ambulance Type</dt><dd>${ambFull(a[2])}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
     <div class="dsec"><h4>Assigned Driver</h4>
       ${a[3].includes('Unassigned')?'<span class="t-sub">No driver assigned</span>':`<div class="cell-user">${av(a[3])}<div><b style="color:var(--navy)">${a[3]}</b><div class="t-sub">On Duty</div></div></div>`}</div>
     <div class="dsec"><h4>Expiry Dates</h4>
-      <dl class="dl"><dt>Insurance</dt><dd>${a[4]}</dd><dt>Fitness</dt><dd>${a[5]}</dd></dl></div>
+      <dl class="dl"><dt>Insurance</dt><dd>${a[4]}</dd><dt>Fitness</dt><dd>${a[5]}</dd><dt>PUC</dt><dd>30 Sep 2026</dd><dt>Road Tax</dt><dd>31 Mar 2027</dd>${ambCalibApplicable(a)?'<dt>Calibration</dt><dd>15 Aug 2026</dd>':''}</dl></div>
     <div class="dsec ${mode==='docs'?'focus':''}" id="ambDocsSec"><h4>Documents</h4>
-      ${ambSetDocs(a)}</div>
+      ${ambDocsSection(a)}</div>
     <div class="dsec"><h4>Verification Notes</h4>
       <p style="font-size:12.5px;color:var(--gray-600)">${a[7]==='Verified'?'All documents verified by the Medurun team. No action required.':'Awaiting verification. Some documents are pending review or missing.'}</p></div>
   </div>
@@ -1730,9 +2064,10 @@ function driverDrawer(name,mode){
         </div></div>
       <div class="dsec"><h4>Credentials</h4>
         <div class="form-grid">
-          <div class="field"><label>License Number</label><input value="MH01 20180012345"></div>
-          <div class="field"><label>EMT Certificate Number</label><input value="EMT-2019-0421"></div>
-          <div class="field"><label>Aadhaar Number</label><input value="XXXX XXXX 4821"></div>
+          <div class="field"><label>Driving Licence No.</label><input value="MH01 20180012345"></div>
+          <div class="field"><label>PAN Number</label><input value="ABCDE1234F"></div>
+          <div class="field"><label>Aadhaar / Voter ID No.</label><input value="XXXX XXXX 4821"></div>
+          <div class="field"><label>Bank Account No.</label><input value="•••••• 6721"></div>
         </div></div>
       <div class="dsec"><h4>Assignment</h4>
         <div class="form-grid">
@@ -1753,22 +2088,47 @@ function driverDrawer(name,mode){
     <div class="dsec"><h4>Personal</h4>
       <dl class="dl"><dt>DOB</dt><dd>14 May 1988</dd><dt>Blood Group</dt><dd>O+</dd><dt>Experience</dt><dd>7 years</dd></dl></div>
     <div class="dsec"><h4>Credentials</h4>
-      <dl class="dl"><dt>License No.</dt><dd>MH01 20180012345</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Aadhaar</dt><dd>XXXX XXXX 4821</dd></dl></div>
+      <dl class="dl"><dt>Driving Licence No.</dt><dd>MH01 20180012345</dd><dt>PAN</dt><dd>ABCDE1234F</dd><dt>Aadhaar / Voter ID</dt><dd>XXXX XXXX 4821</dd><dt>Bank A/C</dt><dd>•••••• 6721</dd></dl></div>
     <div class="dsec"><h4>Assigned Ambulance</h4>
       ${d[2].includes('Unassigned')?'<span class="t-sub">No ambulance assigned</span>':`<span class="badge2 b-navy">${d[2]}</span>`}</div>
     <div class="dsec ${mode==='docs'?'focus':''}" id="drvDocsSec"><h4>Documents</h4>
-      ${drvSetDocs(d)}</div>
+      ${drvDocsSection(d)}</div>
   </div>
   <div class="drawer-foot"><button class="btn btn-ghost" onclick="closeAll()">Close</button><button class="btn btn-primary" onclick="driverDrawer('${name}','edit')">${ic('edit')}Edit Driver</button></div>`);
   if(mode==='docs')setTimeout(()=>{const s=document.getElementById('drvDocsSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},260);
 }
 function vqFindArr(kind){return kind==='drv'?VERIFY_DRIVERS:VERIFY_AMB;}
-function vqDocRow(name,st,canReplace){
-  const acts=[`<button onclick="vqPreview('${name}')">Preview</button>`,`<button onclick="vqDownload('${name}')">Download</button>`];
-  if(canReplace)acts.push(`<button class="req" onclick="vqReplaceDoc('${name}')">Replace File</button>`);
-  return `<div class="ddoc"><div class="di">${ic('doc')}</div><div class="dn"><b>${name}</b>
-    <div class="da">${acts.join('<span style="color:var(--gray-300)">·</span>')}</div></div>${badge(st)}</div>`;
+// Latest Medurun checklist — verification drawers
+const VQ_DRV_DOCS=[
+  {n:'Driving Licence',kind:'Required'},{n:'PAN Card',kind:'Required'},{n:'Aadhaar Card / Voter ID',kind:'Required'},{n:'Bank Passbook',kind:'Required'},
+  {n:'Passport Size Photo',kind:'Optional'},
+  {n:'EMT Certificate',kind:'Additional'},{n:'Police Clearance',kind:'Additional'},{n:'Medical Fitness',kind:'Additional'},
+];
+const VQ_AMB_DOCS=[
+  {n:'RC',kind:'Required',g:'doc'},{n:'Insurance',kind:'Required',g:'doc'},{n:'Pollution Certificate',kind:'Required',g:'doc'},{n:'Road Tax Certificate',kind:'Required',g:'doc'},{n:'Fitness Certificate',kind:'Required',g:'doc'},
+  {n:'Calibration Certificate',kind:'Conditional',g:'doc',cond:true},
+  {n:'Front',kind:'Required',g:'ext'},{n:'Right',kind:'Required',g:'ext'},{n:'Left',kind:'Required',g:'ext'},{n:'Rear',kind:'Required',g:'ext'},{n:'Odometer',kind:'Required',g:'ext'},
+  {n:'Interior',kind:'Required',g:'int'},{n:'Stretcher',kind:'Required',g:'int'},{n:'Attender Seat',kind:'Required',g:'int'},{n:'Oxygen Chamber',kind:'Required',g:'int'},
+  {n:'Equipment Test',kind:'Conditional',g:'vid',cond:true},{n:'Siren & Blinkers',kind:'Conditional',g:'vid',cond:true},
+];
+function vqKindBadge(k){const c=k==='Required'?'b-navy':k==='Conditional'?'b-amber':'b-gray';return `<span class="badge2 ${c} sm" style="margin-left:6px">${k}</span>`;}
+function vqDocRow(item,doc,catOK){
+  const applicable=!doc.cond||catOK;
+  const st=applicable?vqDocStatus(item,doc.n):'Not Applicable';
+  const uploaded=applicable&&st!=='Missing'&&st!=='Not Applicable';
+  const size=doc.g==='vid'?'18.4 MB':(doc.g==='ext'||doc.g==='int'||doc.n==='Passport Size Photo')?'1.4 MB':'640 KB';
+  const meta=uploaded?`Uploaded ${item[2]} · ${size}`:(st==='Not Applicable'?'Not required for this category':'Not uploaded');
+  const canRep=applicable&&(st==='Changes Requested'||st==='Action Required'||st==='Missing');
+  const e=doc.n.replace(/'/g,"\\'");
+  const acts=[];
+  if(uploaded){acts.push(`<button onclick="vqPreview('${e}')">Preview</button>`);acts.push(`<button onclick="vqDownload('${e}')">Download</button>`);}
+  if(canRep)acts.push(`<button class="req" onclick="vqReplaceDoc('${e}')">Replace File</button>`);
+  return `<div class="ddoc"><div class="di">${ic(doc.g==='vid'?'activity':'doc')}</div><div class="dn"><b>${doc.n}${vqKindBadge(doc.kind)}</b>
+    <div class="du-meta" style="margin:2px 0 3px">${meta}</div>
+    <div class="da">${acts.length?acts.join('<span style="color:var(--gray-300)">·</span>'):'<span class="t-sub">No file</span>'}</div></div>${badge(st)}</div>`;
 }
+function vqRowsByKind(item,list,kind,catOK){return list.filter(d=>d.kind===kind).map(d=>vqDocRow(item,d,catOK)).join('');}
+function vqRowsByGroup(item,list,g,catOK){return list.filter(d=>d.g===g).map(d=>vqDocRow(item,d,catOK)).join('');}
 function vqPreview(name){const isPhoto=/photo/i.test(name);
   openModal(`<div class="modal-head"><h3>${name}</h3><div class="x" onclick="closeModal()">${ic('x')}</div></div>
     <div class="modal-body">
@@ -1795,8 +2155,8 @@ function vqResubmit(name,kind){const it=vqFindArr(kind).find(v=>v[0]===name);if(
 function vqDocStatus(item,doc){const s=item[3];
   if(s==='Verified')return 'Verified';
   if(s==='Submitted'||s==='Under Review')return 'Submitted';
-  const keys={'Driving License':'license','Aadhaar':'aadhaar','EMT Certificate':'emt','Police Clearance':'police clearance','Medical Fitness':'medical fitness','RC':'rc','Insurance':'insurance','Fitness Certificate':'fitness','Pollution Certificate':'pollution','Commercial Permit':'permit','Photos':'photo'};
-  const fb=(item[4]||[]).join(' ').toLowerCase(),k=keys[doc]||'~~';
+  const keys={'Driving Licence':'licence','PAN Card':'pan','Aadhaar Card / Voter ID':'aadhaar','Bank Passbook':'passbook','Passport Size Photo':'passport photo','EMT Certificate':'emt','Police Clearance':'police','Medical Fitness':'medical fitness','RC':'registration certificate','Insurance':'insurance','Pollution Certificate':'pollution','Road Tax Certificate':'road tax','Fitness Certificate':'fitness','Calibration Certificate':'calibration'};
+  const fb=(item[4]||[]).join(' ').toLowerCase(),k=keys[doc]||'~~~';
   if(fb.includes(k))return s==='Action Required'?'Action Required':'Changes Requested';
   return 'Verified';
 }
@@ -1813,10 +2173,9 @@ function vqTimeline(item){const s=item[3],d=item[2],req=item[5]||d;
 function verifyDrawer(name,kind){
   const isDrv=kind==='drv';
   const item=(isDrv?VERIFY_DRIVERS:VERIFY_AMB).find(v=>v[0]===name)||(isDrv?VERIFY_DRIVERS:VERIFY_AMB)[0];
-  const status=item[3],canReplace=(status==='Changes Requested');
+  const status=item[3],canReplace=(status==='Changes Requested'||status==='Action Required');
   const ambRec=AMBULANCES.find(a=>a[0]===name);
-  const docs=isDrv?['Driving License','Aadhaar','EMT Certificate','Police Clearance','Medical Fitness']
-    :['RC','Insurance','Fitness Certificate','Pollution Certificate','Commercial Permit','Photos'];
+  const catOK=/\b(ALS|ACLS)\b/i.test((ambRec?ambRec[2]:'')||'');
   const head=`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
       <div class="da-ic"${isDrv?' style="border-radius:50%;background:var(--navy);color:#fff;font-weight:700"':''}>${isDrv?name.split(' ').map(w=>w[0]).join(''):ic('truck')}</div>
       <div style="min-width:0"><h3>${name}</h3>
@@ -1829,7 +2188,7 @@ function verifyDrawer(name,kind){
       <dl class="dl"><dt>License No.</dt><dd>MH01 20180012345</dd><dt>EMT Cert</dt><dd>EMT-2019-0421</dd><dt>Experience</dt><dd>4 years</dd><dt>Blood Group</dt><dd>O+</dd></dl></div>`
   :`
     <div class="dsec"><h4>Vehicle Details</h4>
-      <dl class="dl"><dt>Registration</dt><dd>${name}</dd><dt>Category</dt><dd>${ambRec?ambRec[2]:'BLS'}</dd><dt>Model</dt><dd>${ambRec?ambRec[1]:'Tata Winger'}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
+      <dl class="dl"><dt>Registration</dt><dd>${name}</dd><dt>Ambulance Type</dt><dd>${ambFull(ambRec?ambRec[2]:'BLS Winger')}</dd><dt>Model</dt><dd>${ambRec?ambRec[1]:'Tata Winger'}</dd><dt>Manufacture</dt><dd>2023</dd></dl></div>
     <div class="dsec"><h4>Assigned Driver</h4>
       ${(ambRec||['','','','— Unassigned'])[3].includes('Unassigned')?'<span class="t-sub">No driver assigned</span>':`<div class="cell-user">${av(ambRec[3])}<div><b style="color:var(--navy)">${ambRec[3]}</b><div class="t-sub">On Duty</div></div></div>`}</div>`;
   // Medurun Review Notes (Changes Requested or Action Required)
@@ -1849,11 +2208,23 @@ function verifyDrawer(name,kind){
     footer+=`<button class="btn btn-primary" onclick="vqScroll('vqDocsSec')">${ic('upload')}Upload Updated Documents</button>`;
   else if(status==='Action Required')
     footer+=`<button class="btn btn-primary" onclick="vqResubmit('${name}','${kind}')">${ic('refresh')}Resubmit Verification</button>`;
+  const docsSec=isDrv?`
+    <div class="dsec ${canReplace?'focus':''}" id="vqDocsSec"><h4>Submitted Documents</h4>
+      <div class="ck-subh">Required Documents</div>${vqRowsByKind(item,VQ_DRV_DOCS,'Required')}
+      <div class="ck-subh">Optional</div>${vqRowsByKind(item,VQ_DRV_DOCS,'Optional')}
+      <div class="ck-subh">Additional Operational Documents</div>${vqRowsByKind(item,VQ_DRV_DOCS,'Additional')}</div>`
+  :`
+    <div class="dsec ${canReplace?'focus':''}" id="vqDocsSec"><h4>Vehicle Documents</h4>
+      <div class="ck-subh">Required</div>${VQ_AMB_DOCS.filter(d=>d.g==='doc'&&!d.cond).map(d=>vqDocRow(item,d,catOK)).join('')}
+      <div class="ck-subh">Conditional</div>${VQ_AMB_DOCS.filter(d=>d.g==='doc'&&d.cond).map(d=>vqDocRow(item,d,catOK)).join('')}</div>
+    <div class="dsec"><h4>Vehicle Media</h4>
+      <div class="ck-subh">Exterior Photos</div>${vqRowsByGroup(item,VQ_AMB_DOCS,'ext',catOK)}
+      <div class="ck-subh">Interior Photos</div>${vqRowsByGroup(item,VQ_AMB_DOCS,'int',catOK)}
+      ${catOK?`<div class="ck-subh">Functional Videos</div>${vqRowsByGroup(item,VQ_AMB_DOCS,'vid',catOK)}`:''}</div>`;
   openDrawer(head+`<div class="drawer-body">
     ${notesSec}
     ${detailSec}
-    <div class="dsec ${canReplace?'focus':''}" id="vqDocsSec"><h4>Submitted Documents</h4>
-      ${docs.map(d=>vqDocRow(d,vqDocStatus(item,d),canReplace)).join('')}</div>
+    ${docsSec}
     <div class="dsec"><h4>Verification Timeline</h4>${vqTimeline(item)}</div>
   </div>
   <div class="drawer-foot">${footer}</div>`);
