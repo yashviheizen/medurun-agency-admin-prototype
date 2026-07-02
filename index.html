@@ -92,6 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .ico-red{background:var(--red-50);color:var(--red)}
 .ico-green{background:var(--green-50);color:var(--green)}
 .ico-amber{background:var(--amber-50);color:var(--amber)}
+.ico-gray{background:var(--gray-100);color:var(--gray-500)}
 
 /* Card */
 .card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
@@ -232,6 +233,27 @@ tbody tr:last-child td{border-bottom:none}
 .tm-leg b{font-size:12.5px;color:var(--navy);display:block}
 .tm-leg span{font-size:11px;color:var(--gray-400);display:block;margin-bottom:14px}
 @media(max-width:720px){.tm-body{flex-direction:column}.tm-side{width:auto;border-left:none;border-top:1px solid var(--gray-200)}}
+/* GPS Tracking */
+.gps-split{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.gps-map{position:relative;height:520px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--gray-200);background:#e8eef5}
+.gps-map svg{width:100%;height:100%;display:block}
+.gps-legend{position:absolute;bottom:12px;left:12px;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:8px 11px;box-shadow:var(--shadow);display:flex;gap:12px;font-size:11.5px;color:var(--gray-600)}
+.gps-legend span{display:flex;align-items:center;gap:5px}
+.gps-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.gps-mk{cursor:pointer}
+.gps-mk .ring{animation:tmp 1.6s infinite}
+.gps-listwrap{border:1px solid var(--gray-200);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);display:flex;flex-direction:column;max-height:520px}
+.gps-listwrap .lh{padding:12px 14px;border-bottom:1px solid var(--gray-100);font-size:13px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+.gps-list{overflow-y:auto;padding:8px}
+.gps-item{border:1px solid var(--gray-200);border-radius:9px;padding:10px 11px;margin-bottom:8px;cursor:pointer;transition:.12s}
+.gps-item:hover{border-color:var(--navy);background:var(--navy-50)}
+.gps-item .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gps-item .r1 b{font-size:13px;color:var(--navy)}
+.gps-item .r2{font-size:11.5px;color:var(--gray-500);margin-top:4px;display:flex;align-items:center;gap:6px}
+.gps-empty{padding:24px 10px;text-align:center;color:var(--gray-400);font-size:12.5px}
+.vd-back{background:none;border:none;color:var(--navy);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;padding:0;display:inline-flex;align-items:center;gap:4px}
+.vd-back:hover{text-decoration:underline}
+@media(max-width:900px){.gps-split{grid-template-columns:1fr}.gps-map{height:380px}.gps-listwrap{max-height:none}}
 /* Fleet quick view strip */
 .qv-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px}
 .qv-item{flex:0 0 auto;min-width:214px;border:1px solid var(--gray-200);border-radius:9px;background:#fff;padding:11px 13px;display:flex;flex-direction:column;gap:7px}
@@ -652,6 +674,7 @@ tbody tr:last-child td{border-bottom:none}
       <a data-page="dashboard" class="active"><i data-ic="grid"></i><span class="txt">Dashboard</span></a>
       <a data-page="live"><i data-ic="activity"></i><span class="txt">Live Rides</span><span class="badge">4</span></a>
       <a data-page="assignment"><i data-ic="map"></i><span class="txt">Assignment Map</span></a>
+      <a data-page="gps"><i data-ic="pin"></i><span class="txt">GPS Tracking</span></a>
       <a data-page="history"><i data-ic="clock"></i><span class="txt">Ride History</span></a>
       <div class="nav-label">Fleet & Staff</div>
       <a data-page="ambulances"><i data-ic="truck"></i><span class="txt">Ambulances</span></a>
@@ -812,6 +835,7 @@ function badge(status){
     'En Route':'b-amber','Pending':'b-amber','Dispatched':'b-navy','Idle':'b-gray','Off Duty':'b-gray',
     'Cancelled':'b-red','Flagged':'b-red','Maintenance':'b-red','Rejected':'b-red','Missing':'b-red',
     'Uploaded':'b-blue','Pending Verification':'b-amber','Changes Requested':'b-blue','Submitted':'b-gray','Under Review':'b-amber','Action Required':'b-red',
+    'On Ride':'b-amber','Offline':'b-gray',
     'Under Review':'b-amber','In Service':'b-blue'
   };
   return `<span class="badge2 ${m[status]||'b-gray'}">${status}</span>`;
@@ -1116,6 +1140,113 @@ function asgSave(reg){const sel=document.querySelector('input[name=asgPick]:chec
   if(prev&&prev[0]!==name&&ASG_HISTORY[reg]){ASG_HISTORY[reg]={last:prev[0],assignedOn:ASG_HISTORY[reg].assignedOn,unassignedOn:'Today'};}
   const nd=DRIVERS.find(x=>x[0]===name);if(nd)nd[2]=reg;
   a[3]=name;updateAsgUI();closeAll();toast('✓ Driver assigned to '+reg);}
+
+/* ---------- GPS Tracking (separate from Assignment Map) ---------- */
+const GPS_POS={'MH12AB1234':[130,150],'MH14CD5678':[420,120],'MH12EF9012':[300,300],'MH16GH3456':[520,340],'MH18IJ7890':[210,390],'MH20KL2345':[480,230]};
+let gpsFilter='All',gpsSearch='';
+function gpsRide(a){return LIVE_RIDES.find(r=>r[3]===a[0]&&LIVE_ACTIVE.includes(r[6]));}
+function gpsStatus(a){if(gpsRide(a))return 'On Ride';if(a[6]==='Maintenance'||a[3].includes('Unassigned'))return 'Offline';return 'Available';}
+function gpsDriver(a){const r=gpsRide(a);return r?r[2]:(a[3].includes('Unassigned')?'—':a[3]);}
+function gpsList(){return AMBULANCES.filter(a=>{const st=gpsStatus(a);
+  if(gpsFilter!=='All'&&st!==gpsFilter)return false;
+  if(gpsSearch){const q=gpsSearch.toLowerCase();if(!(a[0].toLowerCase().includes(q)||gpsDriver(a).toLowerCase().includes(q)))return false;}
+  return true;});}
+function gpsColor(st){return st==='On Ride'?'#d97706':st==='Available'?'#16a34a':'#94a0b4';}
+function gpsMap(){const shown=gpsList();
+  return `<svg viewBox="0 0 640 520" preserveAspectRatio="xMidYMid slice">
+    <rect width="640" height="520" fill="#e8eef5"/>
+    <g stroke="#d3dce8" stroke-width="12" fill="none" stroke-linecap="round"><path d="M-20 130 H660"/><path d="M-20 300 H660"/><path d="M180 -20 V540"/><path d="M470 -20 V540"/></g>
+    <g stroke="#dde4ee" stroke-width="5" fill="none"><path d="M-20 220 H660"/><path d="M-20 410 H660"/><path d="M320 -20 V540"/></g>
+    <g fill="#cfdae8"><rect x="210" y="150" width="90" height="60" rx="3"/><rect x="360" y="150" width="80" height="60" rx="3"/><rect x="210" y="330" width="90" height="60" rx="3"/><rect x="500" y="330" width="100" height="60" rx="3"/></g>
+    ${shown.map(a=>{const p=GPS_POS[a[0]]||[300,260],st=gpsStatus(a),c=gpsColor(st);
+      return `<g class="gps-mk" transform="translate(${p[0]},${p[1]})" onclick="gpsDrawer('${a[0]}')">
+        ${st==='On Ride'?`<circle class="ring" r="10" fill="${c}"/>`:''}
+        <circle r="14" fill="${c}" stroke="#fff" stroke-width="3"/>
+        <g transform="translate(-7,-7) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h13v11H1z"/><path d="M14 8h4l3 3v3h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></g></g>`;}).join('')}
+  </svg>
+  <div class="gps-legend"><span><i style="background:#d97706"></i>On Ride</span><span><i style="background:#16a34a"></i>Available</span><span><i style="background:#94a0b4"></i>Offline</span></div>`;
+}
+function gpsItems(){const list=gpsList();
+  if(!list.length)return '<div class="gps-empty">No ambulances match.</div>';
+  return list.map(a=>{const st=gpsStatus(a),r=gpsRide(a);
+    return `<div class="gps-item" onclick="gpsDrawer('${a[0]}')">
+      <div class="r1"><b>${a[0]}</b>${badge(st)}</div>
+      <div class="r2"><span class="badge2 b-navy" style="padding:1px 7px;font-size:10px">${a[2]}</span> · ${gpsDriver(a)}</div>
+      <div class="r2">${r?`ETA ${r[7]} · ${r[5]}`:'Parked at base'}</div></div>`;}).join('');
+}
+function gpsRender(){const m=document.getElementById('gpsMap');if(m)m.innerHTML=gpsMap();const l=document.getElementById('gpsListBody');if(l)l.innerHTML=gpsItems();
+  const all=AMBULANCES.map(gpsStatus),set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('gpsOnline',all.filter(s=>s!=='Offline').length);set('gpsOnRide',all.filter(s=>s==='On Ride').length);set('gpsAvail',all.filter(s=>s==='Available').length);set('gpsOffline',all.filter(s=>s==='Offline').length);
+  set('gpsCount',gpsList().length);}
+function gpsSetFilter(v){gpsFilter=v;gpsRender();}
+function gpsSetSearch(v){gpsSearch=v;gpsRender();}
+PAGES.gps=()=>{gpsFilter='All';gpsSearch='';const all=AMBULANCES.map(gpsStatus);return `
+  <div class="page-head"><div><h2>GPS Tracking</h2><p>Live location of your agency's ambulances.</p></div>
+  <span class="pulse"><span class="pd"></span>Live</span></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    ${kpiMiniId('gpsOnline','Online Ambulances',all.filter(s=>s!=='Offline').length,'ico-green','activity')}${kpiMiniId('gpsOnRide','On Ride',all.filter(s=>s==='On Ride').length,'ico-amber','map')}${kpiMiniId('gpsAvail','Available',all.filter(s=>s==='Available').length,'ico-navy','truck')}${kpiMiniId('gpsOffline','Offline / No Signal',all.filter(s=>s==='Offline').length,'ico-gray','clock')}
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+    <div class="search">${ic('search')}<input placeholder="Search by ambulance or driver..." oninput="gpsSetSearch(this.value)" style="width:280px"></div>
+    <div class="filters" style="margin-left:auto"><select onchange="gpsSetFilter(this.value)"><option value="All">All Status</option><option>On Ride</option><option>Available</option><option>Offline</option></select></div>
+  </div>
+  <div class="gps-split">
+    <div class="gps-map" id="gpsMap">${gpsMap()}</div>
+    <div class="gps-listwrap"><div class="lh">Live Ambulances <span class="t-sub" id="gpsCount">${gpsList().length}</span></div>
+      <div class="gps-list" id="gpsListBody">${gpsItems()}</div></div>
+  </div>`;};
+function gpsDrawer(reg){
+  const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];
+  const st=gpsStatus(a),r=gpsRide(a),driver=gpsDriver(a);
+  const loc=r?`En route · ${r[4]} → ${r[5]}`:'Parked at agency base';
+  openDrawer(`<div class="drawer-head"><div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div class="da-ic">${ic('pin')}</div>
+      <div style="min-width:0"><h3>${a[0]}</h3><div style="display:flex;gap:6px;align-items:center;margin-top:4px">${badge(st)}<span class="t-sub">${a[2]}</span></div></div>
+    </div><div class="x" onclick="closeAll()">${ic('x')}</div></div>
+  <div class="drawer-body">
+    <div class="dsec"><h4>Vehicle Details</h4>
+      <dl class="dl"><dt>Ambulance No.</dt><dd>${a[0]}</dd><dt>Ambulance Type</dt><dd>${ambFull(a[2])}</dd><dt>Driver</dt><dd>${driver}</dd><dt>Current Ride</dt><dd>${r?r[0]:'—'}</dd><dt>Current Status</dt><dd>${badge(st)}</dd><dt>ETA</dt><dd>${r?r[7]:'—'}</dd><dt>Current Location</dt><dd>${loc}</dd></dl></div>
+    ${r?`<div class="dsec"><h4>Live Ride</h4>
+      <div class="route" style="margin:0"><div class="line"><div class="o"></div><div class="l" style="min-height:26px"></div><div class="d"></div></div>
+        <div class="pts"><b>${r[4]}</b><span>Pickup</span><b>${r[5]}</b><span>Drop-off</span></div></div></div>`:''}
+  </div>
+  <div class="drawer-foot" style="flex-wrap:wrap">
+    ${r?`<button class="btn btn-ghost" onclick="gpsShowRide('${a[0]}')">${ic('activity')}View Ride</button>`:''}
+    ${driver!=='—'?`<button class="btn btn-ghost" onclick="gpsShowDriver('${a[0]}')">${ic('users')}View Driver Profile</button>`:''}
+    <button class="btn btn-ghost" onclick="gpsShowAmb('${a[0]}')">${ic('truck')}View Ambulance Profile</button>
+    ${driver!=='—'?`<button class="btn btn-primary" onclick="toast('Calling ${driver}...')">${ic('phone')}Call Driver</button>`:''}
+  </div>`);
+}
+function gpsBackHead(reg,title){return `<div class="drawer-head"><div style="min-width:0">
+    <button class="vd-back" onclick="gpsDrawer('${reg}')">← Back to Vehicle Details</button>
+    <h3 style="margin-top:3px">${title}</h3></div><div class="x" onclick="closeAll()">${ic('x')}</div></div>`;}
+function gpsShowRide(reg){const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];const r=gpsRide(a);if(!r){toast('No active ride');return;}
+  openDrawer(gpsBackHead(reg,'Ride '+r[0])+`<div class="drawer-body">
+    <div class="dsec"><h4>Ride Details</h4>
+      <div class="cell-user" style="margin-bottom:11px">${av(r[1])}<div><b style="color:var(--navy)">${r[1]}</b><div class="t-sub">${badge(r[6])}</div></div></div>
+      <dl class="dl"><dt>Driver</dt><dd>${r[2]}</dd><dt>Ambulance</dt><dd>${r[3]}</dd><dt>Status</dt><dd>${badge(r[6])}</dd><dt>ETA</dt><dd>${r[7]}</dd></dl></div>
+    <div class="dsec"><h4>Route</h4><div class="route" style="margin:0"><div class="line"><div class="o"></div><div class="l" style="min-height:26px"></div><div class="d"></div></div>
+      <div class="pts"><b>${r[4]}</b><span>Pickup</span><b>${r[5]}</b><span>Drop-off</span></div></div></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="gpsDrawer('${reg}')">← Back</button><button class="btn btn-primary" onclick="openRideMap('${r[0]}')">${ic('map')}Track on Map</button></div>`);
+}
+function gpsShowDriver(reg){const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];const name=gpsDriver(a);if(name==='—'){toast('No driver assigned');return;}
+  const d=DRIVERS.find(x=>x[0]===name)||[name,'+91 —',reg,'—','—','On Duty','Verified'];
+  openDrawer(gpsBackHead(reg,name)+`<div class="drawer-body">
+    <div class="dsec"><h4>Driver Profile</h4>
+      <div class="cell-user" style="margin-bottom:11px">${av(name)}<div><b style="color:var(--navy)">${name}</b><div class="t-sub" style="display:flex;gap:5px;margin-top:3px">${badge(d[5])} ${badge(d[6])}</div></div></div>
+      <dl class="dl"><dt>Phone</dt><dd>${d[1]}</dd><dt>Assigned Ambulance</dt><dd>${reg}</dd><dt>Total Rides</dt><dd>${d[3]}</dd><dt>Rating</dt><dd>${d[4]&&d[4]!=='—'?'★ '+d[4]:'—'}</dd></dl></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="gpsDrawer('${reg}')">← Back</button><button class="btn btn-primary" onclick="toast('Calling ${name}...')">${ic('phone')}Call Driver</button></div>`);
+}
+function gpsShowAmb(reg){const a=AMBULANCES.find(x=>x[0]===reg)||AMBULANCES[0];
+  openDrawer(gpsBackHead(reg,a[0])+`<div class="drawer-body">
+    <div class="dsec"><h4>Ambulance Profile</h4>
+      <div style="display:flex;gap:6px;margin-bottom:11px">${badge(a[6])}${badge(a[7])}</div>
+      <dl class="dl"><dt>Ambulance Type</dt><dd>${ambFull(a[2])}</dd><dt>Model</dt><dd>${a[1]}</dd><dt>Assigned Driver</dt><dd>${a[3]}</dd><dt>Insurance Exp.</dt><dd>${a[4]}</dd><dt>Fitness Exp.</dt><dd>${a[5]}</dd></dl></div>
+  </div>
+  <div class="drawer-foot"><button class="btn btn-ghost" onclick="gpsDrawer('${reg}')">← Back</button></div>`);
+}
 
 PAGES.history=()=>`
   <div class="page-head"><div><h2>Ride History</h2><p>Complete log of past and ongoing rides</p></div>
@@ -2248,7 +2379,7 @@ function chipPick(el,group){document.querySelectorAll('#'+group+' .chip').forEac
 /* ---------- Router ---------- */
 const TITLES={dashboard:['Operations','Dashboard'],live:['Operations','Live Rides'],assignment:['Operations','Assignment Map'],history:['Operations','Ride History'],
   ambulances:['Fleet & Staff','Ambulances'],addambulance:['Fleet & Staff','Add Ambulance'],drivers:['Fleet & Staff','Drivers'],adddriver:['Fleet & Staff','Add Driver'],
-  verification:['Fleet & Staff','Verification Status'],revenue:['Business','Revenue & Transactions'],settings:['Business','Settings']};
+  gps:['Operations','GPS Tracking'],verification:['Fleet & Staff','Verification Status'],revenue:['Business','Revenue & Transactions'],settings:['Business','Settings']};
 function go(page){
   closeAll();
   document.getElementById('content').innerHTML=(PAGES[page]||PAGES.dashboard)();
